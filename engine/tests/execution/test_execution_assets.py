@@ -59,7 +59,7 @@ def test_pipeline_route_rejects_a_stage_not_present_in_the_skill_registry(
     gates_dir.mkdir()
     (identities_dir / "smith.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true
@@ -109,7 +109,7 @@ def test_pipeline_route_rejects_a_tool_outside_the_identity_allowlist(
     gates_dir.mkdir()
     (identities_dir / "smith.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true
@@ -164,7 +164,7 @@ def test_pipeline_route_rejects_a_declared_tool_missing_from_runtime(
     gates_dir.mkdir()
     (identities_dir / "smith.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true

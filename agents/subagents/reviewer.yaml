@@ -1,4 +1,4 @@
-schema: agentsmith.subagent/v1
+schema: helve.subagent/v1
 id: reviewer
 name: Reviewer
 description: Read-only adversarial review of a diff or file for defects

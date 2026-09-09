@@ -2,7 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-const AUTH_TOKEN_PATH = path.join(os.homedir(), ".agent-smith", "auth_token");
+const AUTH_TOKEN_PATH = path.join(os.homedir(), ".helve", "auth_token");
 
 let permissionChecked = false;
 
@@ -17,7 +17,7 @@ export async function localAuthHeaders(): Promise<Record<string, string>> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     // The local server writes this file on first start, so name it: a shell pointed at a
-    // remote SMITH_SERVER_URL has no other clue why every request fails.
+    // remote HELVE_SERVER_URL has no other clue why every request fails.
     throw new Error(`Local Smith auth token is unavailable at ${AUTH_TOKEN_PATH}: ${message}`);
   }
 

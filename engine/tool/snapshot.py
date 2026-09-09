@@ -35,7 +35,7 @@ class FileSnapshot:
             from common.config import DATA_DIR
             self._backup_dir = DATA_DIR / "snapshots" / session_id
         except Exception:
-            self._backup_dir = Path.home() / ".agent-smith" / "snapshots" / session_id
+            self._backup_dir = Path.home() / ".helve" / "snapshots" / session_id
         self._backup_dir.mkdir(parents=True, exist_ok=True)
         self._tracked: dict[str, list[str]] = {}
         # Monotonic per-file version counter. Never derived from

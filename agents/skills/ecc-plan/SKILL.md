@@ -7,7 +7,7 @@ description: Restate requirements, assess risks, and create a step-by-step imple
 Source: https://github.com/affaan-m/ECC/blob/e4e4163101f162881e628f300a9ca4e6a940bcea/commands/plan.md
 License: MIT
 Adaptation: ECC distributes this workflow as a command; this wrapper only gives
-it Agent-Smith skill frontmatter so the existing skill registry can load it.
+it Helve skill frontmatter so the existing skill registry can load it.
 -->
 
 # Plan Command

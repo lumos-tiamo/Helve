@@ -14,7 +14,7 @@ Smith 可以把一段**范围明确**的工作交给子 Agent：一次隔离的 
 > `enabled_tools_from_config()` 因此把它过滤掉（`preparation.py:81`），
 > 调用会被 `registry.py:703` 拦下。上线该能力的 `9180061` 未同步 profile 种子。
 >
-> 启用方式：在 `~/.agent-smith/agent/config.yaml` 的 `tools.enabled` 中加入
+> 启用方式：在 `~/.helve/agent/config.yaml` 的 `tools.enabled` 中加入
 > `sub_agent`。注意 profile 是**一次性种子**（CLAUDE.md §7），改仓库里的
 > `agents/smith/config.yaml` 只对全新安装生效，已有安装必须改运行时那份。
 
@@ -182,7 +182,7 @@ per_agent = max(MIN_SUMMARY_BYTES,
 新增一个"只读依赖审计"类型。文件 `agents/subagents/auditor.yaml`：
 
 ```yaml
-schema: agentsmith.subagent/v1
+schema: helve.subagent/v1
 id: auditor
 name: Dependency Auditor
 description: 只读 —— 核对声明的依赖与实际 import 是否一致

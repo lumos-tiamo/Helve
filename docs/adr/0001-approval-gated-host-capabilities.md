@@ -6,7 +6,7 @@ Accepted — 2026-07-29
 
 ## Context
 
-Agent-Smith is intended to be a resident terminal Agent on the user's
+Helve is intended to be a resident terminal Agent on the user's
 computer. A workspace-only hard deny makes normal local workflows impossible:
 the user cannot approve a neighbouring project, a Downloads folder, a
 credential file they own, a destructive command, or a network operation.
@@ -25,7 +25,7 @@ call able to act beyond the user's immediate intent.
 3. The execution backend receives only the capability needed by that approved
    call. In particular, an approved shell command gets a dynamic host scope;
    an unapproved shell remains workspace-confined.
-4. Agent-Smith runtime provider/API credentials remain non-delegable. No model
+4. Helve runtime provider/API credentials remain non-delegable. No model
    approval can expose them to a tool or child process.
 5. Direct rejections are reserved for technical execution errors, not for the
    user's ownership of a resource. A failed guard must say whether approval is

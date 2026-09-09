@@ -28,10 +28,10 @@ def test_resolve_llm_config_loads_builtin_smith_profile_by_default(
     monkeypatch.setattr(model_config, "SMITH_PROFILE_DIR", smith_dir)
     monkeypatch.setattr(model_config, "AGENT_DIR", data_dir / "agent")
     for env_key in (
-        "AGENTSMITH_LLM_API_KEY",
-        "AGENTSMITH_LLM_BASE_URL",
-        "AGENTSMITH_LLM_MODEL",
-        "AGENTSMITH_LLM_PROVIDER",
+        "HELVE_LLM_API_KEY",
+        "HELVE_LLM_BASE_URL",
+        "HELVE_LLM_MODEL",
+        "HELVE_LLM_PROVIDER",
     ):
         monkeypatch.delenv(env_key, raising=False)
 
@@ -140,10 +140,10 @@ llm:
     monkeypatch.setattr(model_config, "SMITH_PROFILE_DIR", tmp_path / "missing-smith")
     monkeypatch.setattr(model_config, "AGENT_DIR", tmp_path / "missing-agent")
     for env_key in (
-        "AGENTSMITH_LLM_API_KEY",
-        "AGENTSMITH_LLM_BASE_URL",
-        "AGENTSMITH_LLM_MODEL",
-        "AGENTSMITH_LLM_PROVIDER",
+        "HELVE_LLM_API_KEY",
+        "HELVE_LLM_BASE_URL",
+        "HELVE_LLM_MODEL",
+        "HELVE_LLM_PROVIDER",
     ):
         monkeypatch.delenv(env_key, raising=False)
 

@@ -314,13 +314,13 @@ LangGraph 把 checkpoint 作为运行时基础：每一步保存 graph state，�
 - 写冲突与工作区隔离；
 - 每个 worker 的预算和恢复。
 
-这也是为什么不应把多 Agent 作为 Agent-Smith 的第一优先级。
+这也是为什么不应把多 Agent 作为 Helve 的第一优先级。
 
-## 四、对 Agent-Smith 的设计建议
+## 四、对 Helve 的设计建议
 
 下面先把主流设计轴映射到当前工作树，再给出演进建议。这里区分“已经有结构”与“已经形成完整生产能力”，避免因为类或文件存在就把主路径能力视为完成。
 
-| 设计轴 | Agent-Smith 当前实现 | 判断 |
+| 设计轴 | Helve 当前实现 | 判断 |
 |---|---|---|
 | Agent loop / workflow | [`run_agent_stream`](../../engine/execution/orchestration/agent_loop.py) 负责 Direct/Pipeline 分派；ReAct、Pipeline、Gate 与生命周期已拆入各自子包 | 边界已加深，应继续通过架构测试防止职责回流 |
 | Model Provider | [`LLMClient`](../../engine/llm/client.py) 统一调用 OpenAI-compatible Chat Completions，并归一化 tool call 与 usage | 已有窄接口；缺少显式 capability 描述，不宜提前扩成“大一统 Provider” |
@@ -329,7 +329,7 @@ LangGraph 把 checkpoint 作为运行时基础：每一步保存 graph state，�
 | Permission / Execution | `ToolPolicy` / `ToolGuard` 在工具前做规则和路径检查，但 [`shell.execute`](../../agents/tools/shell.py) 仍通过宿主机 subprocess 执行 | “是否允许”已有基础，“在哪里执行”仍缺真正的执行环境隔离 |
 | Observability / Eval | [`ExecutionEvent`](../../engine/execution/events.py) 定义协议；[`engine/observability/`](../../engine/observability) 持久化脱敏 trace、summary 与诊断投影 | 已有本地可观测性；仍需独立的 outcome/trajectory eval harness |
 
-总体判断：Agent-Smith 已经具备主流 Agent 的核心骨架，真正的差距不在于“再增加几个 Agent”，而在于把 Tool Contract、执行环境、可恢复状态和 Eval 做成深模块。
+总体判断：Helve 已经具备主流 Agent 的核心骨架，真正的差距不在于“再增加几个 Agent”，而在于把 Tool Contract、执行环境、可恢复状态和 Eval 做成深模块。
 
 ### P0：先把单 Agent 运行时做深
 
@@ -439,7 +439,7 @@ Audit / Trace            → 实际发生了什么
 
 最关键的取舍是：
 
-> Agent-Smith 不需要用“更多 Agent”证明它是 Agent 系统。更有价值的是把一个常驻 Agent 的工具契约、权限边界、记忆、恢复和可验证完成做扎实。
+> Helve 不需要用“更多 Agent”证明它是 Agent 系统。更有价值的是把一个常驻 Agent 的工具契约、权限边界、记忆、恢复和可验证完成做扎实。
 
 ## 六、主要一手来源
 

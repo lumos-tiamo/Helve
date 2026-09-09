@@ -1,33 +1,33 @@
-# Claude Code Subagents 调研与 Agent-Smith 可迁移方案
+# Claude Code Subagents 调研与 Helve 可迁移方案
 
-> 范围：仅使用 Anthropic 的 Claude Code / Claude Agent SDK 官方文档。本文是调研结论与设计输入，**不是**当前实现规格，也不代表 Agent-Smith 已接入 Subagent。
+> 范围：仅使用 Anthropic 的 Claude Code / Claude Agent SDK 官方文档。本文是调研结论与设计输入，**不是**当前实现规格，也不代表 Helve 已接入 Subagent。
 
 ## 结论先行
 
 Claude Code 的 Subagent 是可复用的「受限子运行」机制：主 Agent 通过 `Agent` 工具交付一条任务说明，子 Agent 在**新的独立上下文窗口**里完成聚焦任务，原始工具调用、搜索结果和中间推理不进入主上下文；主 Agent 获得子 Agent 的最终消息并自行整合。[Claude Code Subagents](https://code.claude.com/docs/en/sub-agents)；[Agent SDK Subagents](https://code.claude.com/docs/en/agent-sdk/subagents)
 
-这很适合 Agent-Smith 的探索、代码搜索、日志/测试归纳等高输出但可独立完成的工作。应迁移的是「独立上下文 + 明确任务契约 + 最小权限 + 可追踪生命周期 + 有限并发」；不应把它误解为多 Agent 共享自治，或把“上下文隔离”误当成“文件、工具和安全隔离”。
+这很适合 Helve 的探索、代码搜索、日志/测试归纳等高输出但可独立完成的工作。应迁移的是「独立上下文 + 明确任务契约 + 最小权限 + 可追踪生命周期 + 有限并发」；不应把它误解为多 Agent 共享自治，或把“上下文隔离”误当成“文件、工具和安全隔离”。
 
-当前 Agent-Smith 的真实运行入口是 `run_stream_with_runtime()` → `_run_events_with_runtime()`：它为一次 run 准备运行时，调用 `run_agent_stream()`，持久化事件并清理 `RuntimeServices`。`RuntimeServices` 已拥有 LLM、`ToolRegistry`、`ToolGuard`、`background_llm` 和 MCP 客户端，`RunStateStore` 也已有 run 级持久化；但代码图中不存在 `Subagent` 符号或对应的子 run / 父子关系模型。因此这是新增编排能力，不能声称“已有子智能体”。
+当前 Helve 的真实运行入口是 `run_stream_with_runtime()` → `_run_events_with_runtime()`：它为一次 run 准备运行时，调用 `run_agent_stream()`，持久化事件并清理 `RuntimeServices`。`RuntimeServices` 已拥有 LLM、`ToolRegistry`、`ToolGuard`、`background_llm` 和 MCP 客户端，`RunStateStore` 也已有 run 级持久化；但代码图中不存在 `Subagent` 符号或对应的子 run / 父子关系模型。因此这是新增编排能力，不能声称“已有子智能体”。
 
 ## Claude Code 的真实机制
 
-| 维度 | 官方事实 | 对 Agent-Smith 的含义 |
+| 维度 | 官方事实 | 对 Helve 的含义 |
 | --- | --- | --- |
 | 上下文与回传 | 非 fork 子 Agent 从空白上下文开始；拿到自己的 system prompt、委派任务、项目规则/记忆、工具定义等，但拿不到父会话、父工具结果或父 system prompt。父侧得到子 Agent 的**最终消息原文**作为工具结果。fork 是例外，会继承父会话。 | 子任务输入必须显式携带路径、错误、已作决定与输出格式。所谓“只回精简摘要”不是平台天然保证，必须由定义和调度器强制摘要 schema、字数/令牌上限。 |
 | 委派 | Claude 依据任务与子 Agent `description` 自动匹配；也可显式指定。内置 Explore/Plan/general-purpose 分别覆盖只读探索、计划研究和可行动的复杂任务。 | v1 不应依赖纯自然语言自动匹配。先暴露显式 `delegate`，由主 Agent 或用户明确选择类型；之后再加受审计的路由策略。 |
 | 前台/后台 | 前台阻塞父对话；后台并发。当前文档指出 v2.1.198 起后台为默认，必要时才前台等待；后台的权限请求会在主会话中显示。失败会以失败状态及可用的最后输出回报。 | 需要独立的 `queued/running/waiting_approval/completed/failed/cancelled/timed_out` 状态机、事件流和取消传播，不能把 `asyncio.create_task()` 当作完整后台能力。 |
 | 工具与权限 | 默认继承父可用工具（含 MCP），可用 `tools` allowlist 与 `disallowedTools` denylist 收紧；子 Agent 的权限模式可配置，父级部分高权限模式会优先。可为某一子 Agent 单独挂 MCP，并在其结束时断连。 | 不能只复用父 `ToolRegistry` 的“全部工具”。调度前要按 **definition ∩ 父会话权限 ∩ ToolGuard** 构建子 registry；`ToolGuard` 仍是最后且不可绕过的执行边界。 |
-| 模型与预算 | 可在定义或单次调用选择模型；未指定时继承主模型。Claude Code 的解析优先级是环境变量、单次调用、定义、主会话。官方把模型选择列为控制成本的手段；完成的 Agent 调用还可观测总 token、时长和工具调用数。 | Agent-Smith 应让 profile 定义模型/思考级别和每次/总 run token、时间、工具调用预算；预算耗尽必须是可见终态，不能只依赖厂商额度错误。 |
-| 并发与嵌套 | 独立任务可并行；子 Agent 也可嵌套，深度固定上限为 5。官方文档没有给出可作为产品默认值的并发上限。 | v1 禁用嵌套，做每个父 run 和全局的可配置并发槽；不要照搬 5 层。并发槽、排队、公平性和取消需由 Agent-Smith 自己定义。 |
+| 模型与预算 | 可在定义或单次调用选择模型；未指定时继承主模型。Claude Code 的解析优先级是环境变量、单次调用、定义、主会话。官方把模型选择列为控制成本的手段；完成的 Agent 调用还可观测总 token、时长和工具调用数。 | Helve 应让 profile 定义模型/思考级别和每次/总 run token、时间、工具调用预算；预算耗尽必须是可见终态，不能只依赖厂商额度错误。 |
+| 并发与嵌套 | 独立任务可并行；子 Agent 也可嵌套，深度固定上限为 5。官方文档没有给出可作为产品默认值的并发上限。 | v1 禁用嵌套，做每个父 run 和全局的可配置并发槽；不要照搬 5 层。并发槽、排队、公平性和取消需由 Helve 自己定义。 |
 | 隔离 | 上下文隔离不等于工作目录隔离：默认在父的当前工作目录运行，只有 `isolation: worktree` 才给临时 Git worktree。 | 探索型 worker 默认只读；任何写入型 worker 必须显式选择隔离工作区、专属 run 目录或 approval，避免同一仓库并发写冲突。 |
 
 ### 需要精确理解的两个边界
 
-1. **“摘要回传”需要产品契约。** SDK 文档说父收到的是子 Agent final message verbatim，而 Claude Code 再由父决定是否概括。故 Agent-Smith 需要在委派提示中规定结构化输出，例如 `findings`（最多 5 项）、`evidence`（路径/命令）、`recommendation`、`uncertainties`，再由 executor 对超限输出做截断/摘要；禁止把完整 transcript 回灌父 prompt。
-2. **“独立上下文”不能放松安全。** Claude 的 Explore/Plan 为节省成本甚至跳过项目规则和 Git 状态；这不适合直接复制到 Agent-Smith，因为项目策略、租户身份、工作目录约束和 `ToolGuard` 是安全边界，必须由 runtime 传递并每次执行强制检查。
+1. **“摘要回传”需要产品契约。** SDK 文档说父收到的是子 Agent final message verbatim，而 Claude Code 再由父决定是否概括。故 Helve 需要在委派提示中规定结构化输出，例如 `findings`（最多 5 项）、`evidence`（路径/命令）、`recommendation`、`uncertainties`，再由 executor 对超限输出做截断/摘要；禁止把完整 transcript 回灌父 prompt。
+2. **“独立上下文”不能放松安全。** Claude 的 Explore/Plan 为节省成本甚至跳过项目规则和 Git 状态；这不适合直接复制到 Helve，因为项目策略、租户身份、工作目录约束和 `ToolGuard` 是安全边界，必须由 runtime 传递并每次执行强制检查。
 
-## 适合 Agent-Smith 的最小可行方案
+## 适合 Helve 的最小可行方案
 
 先只解决“高噪声、可独立、只需结论”的任务，不把核心多步骤实现分裂成多个可写 worker。
 
@@ -69,8 +69,8 @@ Parent run
 
 ## 不能照搬及风险
 
-- **无需照搬 Claude 的自动调度。** `description` 匹配有不可预测性；Agent-Smith 应以显式工具 schema 与门槛（任务类型、预算、是否可后台）为先。
-- **不要复制 Explore/Plan 的规则跳过。** Agent-Smith 的运行时身份、目录范围、工具策略和审批不是可选提示，必须入子 run。
+- **无需照搬 Claude 的自动调度。** `description` 匹配有不可预测性；Helve 应以显式工具 schema 与门槛（任务类型、预算、是否可后台）为先。
+- **不要复制 Explore/Plan 的规则跳过。** Helve 的运行时身份、目录范围、工具策略和审批不是可选提示，必须入子 run。
 - **不要共享可关闭资源。** 当前 `RuntimeServices.close()` 会关闭 MCP 与 LLM 客户端；子 run 若共享同一实例，一个子任务结束即可误关父资源。子任务要么拥有自己的 clients，要么使用具有引用计数/由父统一关闭的共享池。
 - **不要默认并行写目录。** 默认同一 cwd 的语义会产生竞态、污染父工作区与难以归因的工具结果；先只读，后续再以 worktree/overlay 加 approval 引入写入型 agent。
 - **不要把子输出直接写入记忆。** 研究结论、失败日志和模型推断必须先标为来源明确的 artifact；只有被主 Agent 验证/用户采纳的结论才能进入现有 memory 学习流程。

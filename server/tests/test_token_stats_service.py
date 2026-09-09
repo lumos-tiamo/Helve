@@ -80,8 +80,8 @@ async def test_token_stats_aggregates_daily_models_and_streaks() -> None:
     await service.record_usage(
         session_id="s1",
         run_id="r1",
-        project_name="Agent-Smith",
-        project_path="/tmp/Agent-Smith",
+        project_name="Helve",
+        project_path="/tmp/Helve",
         model="gpt-test",
         usage={"input_tokens": 10, "output_tokens": 5, "total_tokens": 15},
         occurred_at=datetime.fromisoformat("2026-01-01T10:00:00+00:00"),
@@ -89,8 +89,8 @@ async def test_token_stats_aggregates_daily_models_and_streaks() -> None:
     await service.record_usage(
         session_id="s1",
         run_id="r1",
-        project_name="Agent-Smith",
-        project_path="/tmp/Agent-Smith",
+        project_name="Helve",
+        project_path="/tmp/Helve",
         model="gpt-test",
         usage={"input_tokens": 20, "output_tokens": 10, "total_tokens": 30},
         occurred_at=datetime.fromisoformat("2026-01-02T11:00:00+00:00"),
@@ -457,8 +457,8 @@ async def test_record_usage_clears_message_estimates_for_the_session() -> None:
     await service.record_usage(
         session_id="s1",
         run_id="r1",
-        project_name="Agent-Smith",
-        project_path="/tmp/Agent-Smith",
+        project_name="Helve",
+        project_path="/tmp/Helve",
         model="gpt-test",
         usage={"input_tokens": 100, "output_tokens": 25, "total_tokens": 125},
         occurred_at=datetime.fromisoformat("2026-07-14T11:00:00+00:00"),
@@ -1577,7 +1577,7 @@ async def test_startup_backfill_never_locks_out_a_concurrent_request_write() -> 
 @pytest.mark.asyncio
 async def test_schema_upgrade_adds_the_turn_index_to_a_populated_database() -> None:
     """The index has to reach installs that already hold history, without
-    disturbing it — an existing ``~/.agent-smith/app.db`` is the only copy of a
+    disturbing it — an existing ``~/.helve/app.db`` is the only copy of a
     resident Smith's transcripts."""
     db = await aiosqlite.connect(":memory:")
     db.row_factory = aiosqlite.Row

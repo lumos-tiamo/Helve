@@ -1,10 +1,10 @@
 """真调 LLM 的端到端冒烟测试 —— 默认跳过，手动触发。
 
 启用：
-    AGENT_SMITH_E2E=1 uv run --with pytest --with pytest-asyncio pytest tests/test_e2e_smoke.py -v
+    HELVE_E2E=1 uv run --with pytest --with pytest-asyncio pytest tests/test_e2e_smoke.py -v
 
 顺便录 golden case（之后可用 engine.llm.replay 无成本重放）：
-    AGENT_SMITH_E2E=1 AGENT_SMITH_RECORD_LLM=~/.agent-smith/golden/write.jsonl \
+    HELVE_E2E=1 HELVE_RECORD_LLM=~/.helve/golden/write.jsonl \
         uv run --with pytest --with pytest-asyncio pytest tests/test_e2e_smoke.py -k write
 
 这一层捕的是 636 条 mock 测试碰不到的故障：接线断了但每个零件都对。
@@ -32,8 +32,8 @@ from engine.execution import EventType
 from engine.safety.approval import APPROVAL_BROKER
 
 pytestmark = pytest.mark.skipif(
-    not os.environ.get("AGENT_SMITH_E2E"),
-    reason="真调 LLM 会花钱；手动启用 AGENT_SMITH_E2E=1",
+    not os.environ.get("HELVE_E2E"),
+    reason="真调 LLM 会花钱；手动启用 HELVE_E2E=1",
 )
 
 

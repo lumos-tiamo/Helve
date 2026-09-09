@@ -52,7 +52,7 @@
 ```python
 # 测试场景：运行时改环境变量
 import os
-os.environ["AGENT_SMITH_PROJECT_ROOT"] = "/custom/path"
+os.environ["HELVE_PROJECT_ROOT"] = "/custom/path"
 from common.config import reset_paths
 reset_paths()  # 重新加载配置
 
@@ -90,17 +90,17 @@ assert PATHS.project_root == Path("/custom/path")
 ### 问题
 - cwd 向上搜索只检查 `agents/` 目录存在性
 - 可能误匹配其他项目的 `agents/` 目录
-- 缺少 Agent-Smith 特征验证
+- 缺少 Helve 特征验证
 
 ### 修复方案
 **文件**: `common/paths.py:15-47`
 
-- **严格验证**：检查 Agent-Smith 特征文件：
+- **严格验证**：检查 Helve 特征文件：
   - `agents/smith/config.yaml`
   - `agents/identities/smith.yaml`
   - `agents/skills/*/SKILL.md` 技能标记
 - **调试日志**：跳过候选目录时记录调试信息
-- **明确失败**：未找到完整资源根时抛出错误，要求设置 `AGENT_SMITH_PROJECT_ROOT`
+- **明确失败**：未找到完整资源根时抛出错误，要求设置 `HELVE_PROJECT_ROOT`
 
 ### 收益
 - 降低误匹配风险

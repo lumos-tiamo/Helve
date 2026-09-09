@@ -23,7 +23,7 @@ LangGraph 将长期记忆分为 semantic、episodic、procedural：事实、经�
 - profile：一份持续更新的、范围明确的结构化资料，适合稳定的用户或项目事实；
 - collection：许多粒度更小的独立记忆，新增和检索更容易，但需要额外处理更新、删除和去重。
 
-因此，Agent-Smith 不应让所有内容共用一份 Markdown。建议至少使用以下类型：
+因此，Helve 不应让所有内容共用一份 Markdown。建议至少使用以下类型：
 
 | 类型 | 应记录的内容 | 默认生命周期 |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Letta 的 context hierarchy 将记忆分为始终放在上下文中的 memory bl
 
 Claude Code 的 auto memory 明确选择保存纠正、构建命令、调试经验、架构笔记、代码风格偏好和工作习惯，并建议用简短索引指向主题文件，而不是让一个入口文件无限增长。
 
-对 Agent-Smith 来说，值得写入长期记忆的内容包括：
+对 Helve 来说，值得写入长期记忆的内容包括：
 
 - 用户明确说“记住”的事实、偏好或规则；
 - 用户纠正 Agent 后形成的行为规则；
@@ -65,7 +65,7 @@ Claude Code 的 auto memory 明确选择保存纠正、构建命令、调试经�
 
 ### 4. “变聪明”来自反馈闭环
 
-Generative Agents 的研究显示，观察、计划和反思共同影响后续行为；Reflexion 则把任务反馈转换成文字反思，并放入 episodic memory，以影响后续决策。对 Agent-Smith 而言，真正有价值的强化信号应该来自用户纠正、测试结果、工具成功/失败和任务是否完成，而不是单纯的“这条记忆被读取过”。
+Generative Agents 的研究显示，观察、计划和反思共同影响后续行为；Reflexion 则把任务反馈转换成文字反思，并放入 episodic memory，以影响后续决策。对 Helve 而言，真正有价值的强化信号应该来自用户纠正、测试结果、工具成功/失败和任务是否完成，而不是单纯的“这条记忆被读取过”。
 
 来源：[Generative Agents](https://arxiv.org/abs/2304.03442)、[Reflexion](https://arxiv.org/abs/2303.11366)。
 
@@ -94,7 +94,7 @@ Markdown 可以继续保留，但应该降级为人类可读的派生视图。�
 
 `confidence`、`importance` 和当前查询的 `relevance` 要分开：被读取很多次只能说明可能常用，不能自动证明它更真实。冲突时不要直接覆盖旧内容，而应保留版本，把旧记录标为 `superseded`，无法判断时标为 `disputed`。
 
-## 对当前 Agent-Smith 的判断
+## 对当前 Helve 的判断
 
 当前实现已经有 `recent.jsonl` 作为事件源，也有编译、Dream 和用户偏好学习。但当前事件主要只有 `task / summary / timestamp`，Markdown 编译层缺少记录级身份、证据和冲突链；本地实际生成的 `recent.md` 已经混入重复事件和长篇回答式文本，而 `durable.md` 仍为空。这正是“内容很多但记忆不聪明”的典型表现。
 

@@ -322,14 +322,14 @@ def test_git_worktree_creation_stays_under_the_selected_repository(tmp_path, mon
         )
     )
 
-    expected = repo_dir / ".agent-smith-worktrees" / "feature_demo"
+    expected = repo_dir / ".helve-worktrees" / "feature_demo"
     assert str(expected) in result
     assert recorded[-1] == (["worktree", "add", str(expected), "-b", "feature/demo"], str(repo_dir))
 
 
 def test_git_operations_do_not_delegate_runtime_secrets(tmp_path, monkeypatch):
     git_ops = _load_tool_module("git_ops")
-    monkeypatch.setenv("AGENT_SMITH_PROVIDER_SECRET", "must-not-reach-git")
+    monkeypatch.setenv("HELVE_PROVIDER_SECRET", "must-not-reach-git")
     environments: list[dict[str, str] | None] = []
 
     class RecordingEnvironment:
@@ -363,7 +363,7 @@ def test_git_operations_do_not_delegate_runtime_secrets(tmp_path, monkeypatch):
     assert environments
     assert all(environment is not None for environment in environments)
     assert all(
-        "AGENT_SMITH_PROVIDER_SECRET" not in environment
+        "HELVE_PROVIDER_SECRET" not in environment
         for environment in environments
         if environment is not None
     )

@@ -84,7 +84,7 @@ class QualityGateHook(PostToolHook):
         tool_output: Any
     ) -> list[str]:
         """运行质量检查"""
-        # 只检查文件编辑工具（Agent-Smith 工具名；路径参数键是 path）
+        # 只检查文件编辑工具（Helve 工具名；路径参数键是 path）
         if tool_name not in ["edit_file", "write_file"]:
             return []
 

@@ -55,7 +55,7 @@ TOOL_META = {
     "concurrency": "serial",
 }
 
-USER_AGENT = "AgentSmithCrawler/1.0"
+USER_AGENT = "HelveCrawler/1.0"
 MAX_PAGES = 50
 MAX_DEPTH = 4
 MAX_DOCUMENT_BYTES = 512 * 1024

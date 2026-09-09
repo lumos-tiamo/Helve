@@ -3,7 +3,7 @@ revision = 2
 requires-python = ">=3.11"
 
 [[package]]
-name = "agent-smith-common"
+name = "helve-common"
 version = "0.1.0"
 source = { editable = "../common" }
 dependencies = [
@@ -18,11 +18,11 @@ requires-dist = [
 ]
 
 [[package]]
-name = "agent-smith-engine"
+name = "helve-engine"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "agent-smith-common" },
+    { name = "helve-common" },
     { name = "aiosqlite" },
     { name = "httpx" },
     { name = "pdfplumber" },
@@ -41,7 +41,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "agent-smith-common", editable = "../common" },
+    { name = "helve-common", editable = "../common" },
     { name = "aiosqlite", specifier = ">=0.21" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "pdfplumber", specifier = ">=0.11" },

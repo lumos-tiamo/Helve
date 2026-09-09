@@ -270,7 +270,7 @@ def _is_sensitive_read_name(name: str) -> bool:
 
 
 class FileGuard:
-    # Mirrors ``macos_seatbelt._CREDENTIAL_DIRECTORIES`` minus ``.agent-smith``,
+    # Mirrors ``macos_seatbelt._CREDENTIAL_DIRECTORIES`` minus ``.helve``,
     # which has its own dedicated platform-state and runtime-credential rules.
     _ALWAYS_BLOCKED = frozenset({".ssh", ".gnupg", ".aws", ".kube", ".docker"})
     _SENSITIVE_WRITE = frozenset({".env", ".env.local", ".env.production", ".npmrc", ".pypirc"})
@@ -533,7 +533,7 @@ class FileGuard:
             # files retain their ordinary tool policy so lifecycle maintenance
             # does not create a second special path.
             try:
-                # Case-fold the *block* test so a retyped ``.Agent-Smith`` cannot
+                # Case-fold the *block* test so a retyped ``.Helve`` cannot
                 # slip past it; the memory allow-list below stays case-exact so
                 # folding never widens the write exemption.
                 folded_root = _casefolded(_PLATFORM_DATA_ROOT)
@@ -559,7 +559,7 @@ class FileGuard:
                     writing=True,
                     high_risk=True,
                     reason=(
-                        "[platform-state-001] Writing Agent-Smith runtime state "
+                        "[platform-state-001] Writing Helve runtime state "
                         "requires high-risk approval"
                     ),
                 )
@@ -673,6 +673,9 @@ class AuditLog:
     independent view of a shared append-only file.
     """
 
+    # Seeds the chain's genesis hash, so it keeps the pre-Helve name on
+    # purpose: changing it re-roots the chain and makes every audit log
+    # written before the rename fail verification.  It is never displayed.
     _CHAIN_NAMESPACE = "agent-smith-audit"
 
     def __init__(self, log_path: Optional[Path] = None):
@@ -681,7 +684,7 @@ class AuditLog:
                 from common.config import DATA_DIR
                 log_path = DATA_DIR / "audit.jsonl"
             except Exception:
-                log_path = Path.home() / ".agent-smith" / "audit.jsonl"
+                log_path = Path.home() / ".helve" / "audit.jsonl"
         self._path = log_path
         self._chain: HashChainLog | None = None
 
@@ -861,7 +864,7 @@ class SessionWhitelist:
 
 _REDIRECT_RE = re.compile(r"(?:>>?|[12]>>?|&>>?)\s*([^\s;|&]+)")
 
-_PLATFORM_DATA_ROOT = (Path.home() / ".agent-smith").resolve()
+_PLATFORM_DATA_ROOT = (Path.home() / ".helve").resolve()
 _MEMORY_WRITE_ROOT = _PLATFORM_DATA_ROOT / "agent" / "memory"
 _MEMORY_WRITE_FILES = frozenset({"recent.jsonl", "recent.md", "durable.md"})
 _RUNTIME_CREDENTIAL_PATHS = frozenset({
@@ -989,7 +992,7 @@ class ToolGuard:
 
     def allow_project_instruction_path(self, project_root: Path) -> Path:
         """Whitelist only the canonical project instruction file for an explicit /init action."""
-        target = project_root.resolve() / ".smith" / "SMITH.md"
+        target = project_root.resolve() / ".helve" / "HELVE.md"
         self.whitelist.allow_file(str(target))
         return target
 

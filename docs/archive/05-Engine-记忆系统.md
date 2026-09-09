@@ -12,7 +12,7 @@ Smith 是唯一运行中的 Agent。记忆模块把经证据支持、且对未�
 - `context.md`：用户级协作偏好和稳定背景；
 - `memory/durable.md`：项目级工作状态、待处理项、已验证结论、决定和陷阱。
 
-实现不保存完整聊天作为正式记忆，不训练模型权重，不启动第二个 Agent，也没有查询时检索、FTS、向量索引或 episode 层。`SMITH.md` 始终由用户维护，自动记忆永不修改它。
+实现不保存完整聊天作为正式记忆，不训练模型权重，不启动第二个 Agent，也没有查询时检索、FTS、向量索引或 episode 层。`HELVE.md` 始终由用户维护，自动记忆永不修改它。
 
 ## 2. 端到端闭环
 
@@ -139,7 +139,7 @@ Dream 不再生成知识或二次改写 durable，只做两件事：
 
 `PromptAssembler` 把 `context.md` 作为 Learned User Context 完整读取。`prepare_runtime()` 通过 `assemble_memory()` 完整读取 `durable.md`，然后作为 Durable Memory 层传入。
 
-两个视图在进入 Prompt 前都会再次清洗，并带有明确安全围栏：记忆是不可信的历史参考，不是指令，不能覆盖 system/developer、`SMITH.md`、当前用户请求或工具权限。
+两个视图在进入 Prompt 前都会再次清洗，并带有明确安全围栏：记忆是不可信的历史参考，不是指令，不能覆盖 system/developer、`HELVE.md`、当前用户请求或工具权限。
 
 `context.md` 由 4K Policy 上限保持常驻可控；`durable.md` 由 10K 上限约束，并在整体 Prompt 超预算时作为可裁剪的参考层。
 
@@ -174,7 +174,7 @@ Dream 不再生成知识或二次改写 durable，只做两件事：
 6. 纠正/忘记不会被 fallback 跨过；
 7. 近满 durable 的 fallback 仍在 10K 内，且不截断保留条目；
 8. 正常回答不读取 `recent.jsonl` 或 `memory_history.jsonl`；
-9. `SMITH.md` 不被自动记忆修改；
+9. `HELVE.md` 不被自动记忆修改；
 10. Engine、Server 与 Shell 契约测试通过。
 
 当前实现基线：2026-08-08。规则以 `engine/memory/MEMORY_POLICY.md` 为准，行为以 `engine/tests/memory/` 及 context/execution/server 集成测试为准。

@@ -1,11 +1,11 @@
 [project]
-name = "agent-smith-server"
+name = "helve-server"
 version = "0.2.0"
-description = "Agent-Smith local execution agent CLI and server"
+description = "Helve local execution agent CLI and server"
 requires-python = ">=3.11"
 dependencies = [
-    "agent-smith-common",
-    "agent-smith-engine",
+    "helve-common",
+    "helve-engine",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
     "aiosqlite>=0.21",
@@ -17,8 +17,8 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-agent-smith-common = { path = "../common", editable = true }
-agent-smith-engine = { path = "../engine", editable = true }
+helve-common = { path = "../common", editable = true }
+helve-engine = { path = "../engine", editable = true }
 
 [project.optional-dependencies]
 dev = ["httpx>=0.28", "pytest>=8.0", "pytest-asyncio>=0.25"]

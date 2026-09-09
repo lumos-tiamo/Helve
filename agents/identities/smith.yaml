@@ -1,4 +1,4 @@
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 description: 面向个人工作流的常驻本地 Agent。

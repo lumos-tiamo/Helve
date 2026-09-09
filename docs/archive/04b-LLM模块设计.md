@@ -6,7 +6,7 @@
 > 保留在此仅供追溯当时的设计取舍，不再随代码更新。
 
 
-本文描述 Agent-Smith 的 LLM 调用模块：它解决什么问题、如何配置和调用、请求如何流转、如何扩展协议，以及本地使用场景下的安全边界。
+本文描述 Helve 的 LLM 调用模块：它解决什么问题、如何配置和调用、请求如何流转、如何扩展协议，以及本地使用场景下的安全边界。
 
 > 定位：这是一个本地优先、单用户使用的模型连接层。它允许用户接入可信的 HTTPS 模型供应商或中转站；它不是多租户模型网关，也不承担计费、配额或组织级密钥管理。
 
@@ -57,7 +57,7 @@ flowchart LR
 | `ProviderClient` | `engine/llm/client.py` | adapter 外的统一门面、能力校验与非流式事件归一化；每次调用发射一条 `GenerationRecord` |
 | `ProviderRegistry` | `engine/llm/factory.py` | provider 名称规范化、别名和 adapter 构造 |
 | `model_config` | `engine/llm/model_config.py` | 多层配置合并、用途路由、超时和端点校验 |
-| `RecordingLLM` | `engine/llm/replay.py` | 录制/回放 LLM turn（流式录 `ProviderEvent` 序列，非流式录 `ChatResponse`），设 `AGENT_SMITH_RECORD_LLM` 启用，用于把 harness 回归变成确定性等值断言 |
+| `RecordingLLM` | `engine/llm/replay.py` | 录制/回放 LLM turn（流式录 `ProviderEvent` 序列，非流式录 `ChatResponse`），设 `HELVE_RECORD_LLM` 启用，用于把 harness 回归变成确定性等值断言 |
 | `GenerationRecord` | `engine/llm/observability.py` | 每次模型调用的观测记录（含 `ttft_ms`）；`llm_purpose` / `generation_context` 标注用途与 run 作用域 |
 | `normalize_usage` | `engine/llm/usage.py` | 归一化各 provider 的 usage 计量字段 |
 
@@ -85,7 +85,7 @@ flowchart LR
 
 ## 5. 配置与用途路由
 
-最小配置位于 `~/.agent-smith/config.yaml`：
+最小配置位于 `~/.helve/config.yaml`：
 
 ```yaml
 llm:
@@ -96,7 +96,7 @@ llm:
   model: Hy3-preview
 ```
 
-配置合并优先级从低到高为：环境变量 → 平台配置 → Smith seed 配置 → Smith runtime 配置 → 会话覆盖。环境变量支持 `AGENTSMITH_LLM_API_KEY`、`AGENTSMITH_LLM_BASE_URL`、`AGENTSMITH_LLM_MODEL` 与 `AGENTSMITH_LLM_PROVIDER`。
+配置合并优先级从低到高为：环境变量 → 平台配置 → Smith seed 配置 → Smith runtime 配置 → 会话覆盖。环境变量支持 `HELVE_LLM_API_KEY`、`HELVE_LLM_BASE_URL`、`HELVE_LLM_MODEL` 与 `HELVE_LLM_PROVIDER`。
 
 同一份配置可按用途覆盖：
 
@@ -323,15 +323,15 @@ uv run pytest tests/test_config_service.py tests/test_config_loader.py tests/tes
 真实模型 E2E 位于 `server/tests/test_e2e_smoke.py`，默认通过 pytest `skipif` 关闭。它只有在以下两个条件同时满足时才会调用真实模型：
 
 1. pytest 收集到了 `test_e2e_smoke.py`；
-2. 环境变量 `AGENT_SMITH_E2E` 为非空。
+2. 环境变量 `HELVE_E2E` 为非空。
 
-因此，启动 Server、运行 Shell 或进行普通聊天不会触发该测试。若长期设置了 `AGENT_SMITH_E2E=1`，运行包含该文件的完整 Server 测试集也会触发真实调用，不要求单独指定文件。
+因此，启动 Server、运行 Shell 或进行普通聊天不会触发该测试。若长期设置了 `HELVE_E2E=1`，运行包含该文件的完整 Server 测试集也会触发真实调用，不要求单独指定文件。
 
 手动执行：
 
 ```bash
 cd server
-AGENT_SMITH_E2E=1 uv run pytest tests/test_e2e_smoke.py -v
+HELVE_E2E=1 uv run pytest tests/test_e2e_smoke.py -v
 ```
 
 该测试会产生真实模型费用，并在 pytest 临时工作区验证自然语言输入、模型决策、工具调用、文件系统结果和 run 正常收尾。它是发布前的在线接线验证门禁，不是 LLM 模块继续拆分或重新设计的前置条件。

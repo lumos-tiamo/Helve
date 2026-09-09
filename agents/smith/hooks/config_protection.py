@@ -64,7 +64,7 @@ class ConfigProtectionHook(PreToolHook):
         tool_input: dict[str, Any]
     ) -> tuple[bool, str | None]:
         """检查是否尝试修改配置文件"""
-        # 只检查文件编辑工具（Agent-Smith 的工具名是 edit_file / write_file，
+        # 只检查文件编辑工具（Helve 的工具名是 edit_file / write_file，
         # 路径参数键是 path）。
         if tool_name not in ["edit_file", "write_file"]:
             return True, None

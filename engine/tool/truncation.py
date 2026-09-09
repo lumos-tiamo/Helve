@@ -20,7 +20,7 @@ def _get_output_dir() -> Path:
             from common.config import DATA_DIR
             _OUTPUT_DIR = DATA_DIR / "tool-output"
         except Exception:
-            _OUTPUT_DIR = Path.home() / ".agent-smith" / "tool-output"
+            _OUTPUT_DIR = Path.home() / ".helve" / "tool-output"
     _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     return _OUTPUT_DIR
 

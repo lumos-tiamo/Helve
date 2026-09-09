@@ -2,7 +2,7 @@
 # 自然语言指令写 role/style/workflow/toolbox.md —— 写在这里不进 prompt。
 #
 # ⚠️ llm.*  五层 merge，本文件是第 3 层，改这里生效（model_config.py:366）
-#    tools  只读 ~/.agent-smith/agent/config.yaml，改这里对已有安装不生效（preparation.py:213）
+#    tools  只读 ~/.helve/agent/config.yaml，改这里对已有安装不生效（preparation.py:213）
 
 name: 个人助手
 role: personal-assistant  # 遗留兼容 id = SMITH_TEMPLATE_ID，勿改

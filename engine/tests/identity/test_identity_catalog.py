@@ -16,7 +16,7 @@ def test_catalog_routes_across_multiple_domain_identities(tmp_path: Path) -> Non
     _write_identity(
         tmp_path,
         "smith.yaml",
-        "schema: agentsmith.identity/v1",
+        "schema: helve.identity/v1",
         "id: smith",
         "name: Smith",
         "default: true",
@@ -28,7 +28,7 @@ def test_catalog_routes_across_multiple_domain_identities(tmp_path: Path) -> Non
     _write_identity(
         tmp_path,
         "legal.yaml",
-        "schema: agentsmith.identity/v1",
+        "schema: helve.identity/v1",
         "id: legal",
         "name: 法务助手",
         "prompt:",
@@ -58,7 +58,7 @@ def test_catalog_uses_default_identity_direct_fallback(tmp_path: Path) -> None:
     _write_identity(
         tmp_path,
         "smith.yaml",
-        "schema: agentsmith.identity/v1",
+        "schema: helve.identity/v1",
         "id: smith",
         "name: Smith",
         "default: true",
@@ -76,7 +76,7 @@ def test_catalog_rejects_unresolvable_pipeline_and_explicit_skill_references(tmp
     _write_identity(
         tmp_path,
         "smith.yaml",
-        "schema: agentsmith.identity/v1",
+        "schema: helve.identity/v1",
         "id: smith",
         "name: Smith",
         "default: true",
@@ -103,7 +103,7 @@ def _git_catalog(directory: Path) -> IdentityCatalog:
     _write_identity(
         directory,
         "smith.yaml",
-        "schema: agentsmith.identity/v1",
+        "schema: helve.identity/v1",
         "id: smith",
         "name: Smith",
         "default: true",

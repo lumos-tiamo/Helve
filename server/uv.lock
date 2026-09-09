@@ -7,7 +7,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "agent-smith-common"
+name = "helve-common"
 version = "0.1.0"
 source = { editable = "../common" }
 dependencies = [
@@ -22,11 +22,11 @@ requires-dist = [
 ]
 
 [[package]]
-name = "agent-smith-engine"
+name = "helve-engine"
 version = "0.1.0"
 source = { editable = "../engine" }
 dependencies = [
-    { name = "agent-smith-common" },
+    { name = "helve-common" },
     { name = "aiosqlite" },
     { name = "httpx" },
     { name = "pdfplumber" },
@@ -36,7 +36,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "agent-smith-common", editable = "../common" },
+    { name = "helve-common", editable = "../common" },
     { name = "aiosqlite", specifier = ">=0.21" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "pdfplumber", specifier = ">=0.11" },
@@ -49,12 +49,12 @@ requires-dist = [
 provides-extras = ["test", "browser"]
 
 [[package]]
-name = "agent-smith-server"
+name = "helve-server"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
-    { name = "agent-smith-common" },
-    { name = "agent-smith-engine" },
+    { name = "helve-common" },
+    { name = "helve-engine" },
     { name = "aiosqlite" },
     { name = "fastapi" },
     { name = "packaging" },
@@ -74,8 +74,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "agent-smith-common", editable = "../common" },
-    { name = "agent-smith-engine", editable = "../engine" },
+    { name = "helve-common", editable = "../common" },
+    { name = "helve-engine", editable = "../engine" },
     { name = "aiosqlite", specifier = ">=0.21" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28" },

@@ -632,7 +632,7 @@ MAX_LINES = 2000
 MAX_BYTES = 50 * 1024   # 50KB
 ```
 
-超限时**完整输出落盘**到 `~/.agent-smith/tool-output/`，返回值里带一个指向该文件的提示。这样模型能看到概要，需要细节时可以再读文件——而不是把 500KB 的日志塞进上下文。
+超限时**完整输出落盘**到 `~/.helve/tool-output/`，返回值里带一个指向该文件的提示。这样模型能看到概要，需要细节时可以再读文件——而不是把 500KB 的日志塞进上下文。
 
 ### 5.5 `ScopedToolRegistry`
 
@@ -1091,14 +1091,14 @@ def _bounded_error_details(value: object) -> dict[str, object] | None: ...
 
 | 方法 | 来源 | 语义 |
 |---|---|---|
-| `load_builtin()` | `~/.agent-smith/builtin/skills/` | Smith 自带 |
-| `load_agent_skills()` | `~/.agent-smith/agent/skills/` | 用户安装 |
+| `load_builtin()` | `~/.helve/builtin/skills/` | Smith 自带 |
+| `load_agent_skills()` | `~/.helve/agent/skills/` | 用户安装 |
 
 `is_builtin()` 让上层能区分两者——比如禁止卸载内建技能。
 
 ### 8.2 启停状态：只记 disabled
 
-`engine/skill/settings.py` 存的是 `~/.agent-smith/agent/skills.yaml`：
+`engine/skill/settings.py` 存的是 `~/.helve/agent/skills.yaml`：
 
 ```yaml
 disabled:
@@ -1191,7 +1191,7 @@ pre_hooks:
 |---|---|---|
 | 1 | 绝对路径 | 用户写了完整路径 |
 | 2 | **项目根**（从 loader.py 上溯 5 级） | 内建 hook：`agents/smith/hooks/xxx.py` |
-| 3 | **配置文件所在目录** | 用户 hook：放在 `~/.agent-smith/` 旁边 |
+| 3 | **配置文件所在目录** | 用户 hook：放在 `~/.helve/` 旁边 |
 
 第二条那个"向上 5 级"是硬编码的相对深度，注释特意把推导写出来了——`engine/execution/hooks/tool/loader.py` 上溯 5 层正好是仓库根。这类基于文件位置的路径推导很脆弱（移动文件就会坏），所以注释必须说明它数的是什么，否则下一个人重构目录结构时不会意识到这里有依赖。
 
@@ -1225,7 +1225,7 @@ hook_instance = hook_class()
 
 ### 8.5.5 两层配置来源
 
-`preparation.py` 先加载 `agents/smith/hooks.yaml`（内建），再加载 `~/.agent-smith/hooks.yaml`（用户）。**用户配置后加载**，所以：
+`preparation.py` 先加载 `agents/smith/hooks.yaml`（内建），再加载 `~/.helve/hooks.yaml`（用户）。**用户配置后加载**，所以：
 
 - 用户可以新增 hook
 - 用户的 hook 排在内建 hook 之后注册
@@ -1261,7 +1261,7 @@ hook_instance = hook_class()
 | 压缩后输入占比 | 0.85 |
 | CJK 字符估算 | 3 token/字 |
 | 非 CJK 估算 | 3 字符/token |
-| `SMITH.md` 单文件上限 | 50 000 字符 |
+| `HELVE.md` 单文件上限 | 50 000 字符 |
 | Prompt 前缀缓存条目上限 | 128 |
 
 ### 工具

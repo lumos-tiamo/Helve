@@ -2,7 +2,7 @@
 
 > 调研时间：2026-07-03
 > 方法：网络多源调研 + 本地逆向工程（二进制分析、JS bundle 分析、SQLite schema 分析、文件结构分析、明文配置和 prompt 完整阅读）
-> 目的：为 Agent-Smith 的产品设计、架构决策和 Agent 设计思路提供完整参考
+> 目的：为 Helve 的产品设计、架构决策和 Agent 设计思路提供完整参考
 > 性质：本文件是 QoderWake 逆向工程的最终汇总，整合 05（技术调研）和 06（Agent 文件与技能系统）的全部发现，并补充此前未单独成文的深层分析
 
 ---
@@ -1183,11 +1183,11 @@ QoderWake 预设了不同角色的 Worker 模板，其中最核心的两种：
 
 ---
 
-## 二十一、对 Agent-Smith 的完整启示
+## 二十一、对 Helve 的完整启示
 
 ### 21.1 直接采纳（P0）
 
-| QoderWake 设计 | Agent-Smith 采纳建议 | 理由 |
+| QoderWake 设计 | Helve 采纳建议 | 理由 |
 |---|---|---|
 | 9 文件身份系统 | 采用相同分离：role.md / style.md / workflow.md / toolbox.md / context.md / memory.md + 能力/风格/承诺声明 | 文件分离使角色可组合、可替换 |
 | SKILL.md 格式 | 直接使用 YAML frontmatter + Markdown 正文 | 简洁、人类可读、AI 可执行 |
@@ -1199,7 +1199,7 @@ QoderWake 预设了不同角色的 Worker 模板，其中最核心的两种：
 
 ### 21.2 选择性采纳（P1）
 
-| QoderWake 设计 | Agent-Smith 采纳建议 | 取舍考量 |
+| QoderWake 设计 | Helve 采纳建议 | 取舍考量 |
 |---|---|---|
 | plugin.json | 可简化采用，v0 不需要完整插件系统 | 先支持 Skills，后支持 Plugins |
 | hooks.json | v0 先实现 SessionStart 和 PreToolUse | 不需要 5 个钩子全上 |
@@ -1211,16 +1211,16 @@ QoderWake 预设了不同角色的 Worker 模板，其中最核心的两种：
 
 ### 21.3 不采纳 / 差异化
 
-| QoderWake 设计 | Agent-Smith 决策 | 理由 |
+| QoderWake 设计 | Helve 决策 | 理由 |
 |---|---|---|
 | Bun/TypeScript 运行时 | 保持 Python + AgentScope | 团队技术栈、AgentScope 成熟度 |
 | Ant Design 组件库 | 使用 shadcn/Base UI | 与 LLM-Wiki-Knowledge-Hub 保持一致 |
 | Swift 原生菜单栏壳 | Electron 或 daemon + 浏览器（待 spike） | Swift 开发成本高，受限 macOS |
-| 仅国产模型 | 支持 OpenAI + Anthropic + 国产 | Agent-Smith 面向更广泛用户 |
+| 仅国产模型 | 支持 OpenAI + Anthropic + 国产 | Helve 面向更广泛用户 |
 | QR 码 IM 配对 | v0 不做 IM 集成 | IM 集成是 v1+ 特性 |
 | 76 表 SQLite | v0 从简单 schema 开始 | 按需增长，不预设 76 表 |
 | WakerFlow 多 Agent | v0 先做单 Agent，v1+ 再做多 Agent | 先打通单 Agent 闭环 |
-| 积分/订阅制 | 不做计费，用户自备 API Key | Agent-Smith 是工具不是平台 |
+| 积分/订阅制 | 不做计费，用户自备 API Key | Helve 是工具不是平台 |
 
 ---
 

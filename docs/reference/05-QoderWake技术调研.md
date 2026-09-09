@@ -2,7 +2,7 @@
 
 > 调研时间：2026-07-03
 > 方法：网络多源调研 + 本地逆向工程（`~/.qoderwake/` 二进制分析、JS bundle 分析、SQLite schema 分析、文件结构分析）
-> 目的：为 Agent-Smith 产品设计和架构决策提供参考
+> 目的：为 Helve 产品设计和架构决策提供参考
 
 ## 产品概况
 
@@ -308,9 +308,9 @@ GitHub QoderAI 组织 23 个公开仓库，核心闭源。
 - x1xhlol/system-prompts-and-models-of-ai-tools/Qoder：泄露的系统提示词
 - npm `@qoder-ai/qodercli`：160 个版本，70.5MB，Node.js >= 20.0.0
 
-## 对 Agent-Smith 的启示
+## 对 Helve 的启示
 
-| QoderWake 方案 | Agent-Smith 现有计划 | 启示 |
+| QoderWake 方案 | Helve 现有计划 | 启示 |
 |---|---|---|
 | Swift 菜单栏壳 (647KB) + daemon | Electron 或 daemon + 浏览器 | 原生壳极轻，Phase 0 可 spike |
 | React + Vite + Tailwind + antd | React + Vite + Tailwind + shadcn | 技术路线一致，验证方向正确 |

@@ -80,7 +80,7 @@ _PRIVATE_FILE_MODE = 0o600
 def _memory_dir(memory_dir: str | Path | None = None) -> Path:
     if memory_dir is not None:
         return Path(memory_dir).expanduser()
-    return Path.home() / ".agent-smith" / "agent" / "memory"
+    return Path.home() / ".helve" / "agent" / "memory"
 
 
 def _ensure_private_dir(path: Path) -> None:

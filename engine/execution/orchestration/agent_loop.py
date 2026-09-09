@@ -59,7 +59,7 @@ async def run_agent_stream(
 ) -> AsyncGenerator[ExecutionEvent, None]:
     """Route to the selected execution implementation and yield events."""
     # Matt's user-facing `grill-me` is an entry wrapper around `grilling`.
-    # In Agent-Smith it enters the full requirements chain rather than
+    # In Helve it enters the full requirements chain rather than
     # bypassing it as a one-off forced skill invocation.
     grill_me_chain_entry = (
         forced_skill == "grill-me"
@@ -179,7 +179,7 @@ def _resume_node_still_matches(checkpoint, node_skills: list[str]) -> bool:
     """Whether the checkpoint's node is still that node in the reloaded chain.
 
     ``skill_chain_index`` is a position, not an identity.  Every run reloads
-    the chain from YAML (user overrides in ``~/.agent-smith/pipelines/`` win),
+    the chain from YAML (user overrides in ``~/.helve/pipelines/`` win),
     so a pipeline edited while a node waited for an answer keeps the index
     valid while moving it onto a different node: the pending answer is then fed
     to a node that never asked anything, and after a deletion crash recovery's

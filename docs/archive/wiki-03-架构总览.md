@@ -58,7 +58,7 @@ if hasattr(module, "TOOL_META") and hasattr(module, "execute"):
 
 契约是**两个符号的存在性**，不是类型。带来的三个后果：
 
-1. 工具文件可以放在任何路径（内建目录、`~/.agent-smith`、别人的仓库）
+1. 工具文件可以放在任何路径（内建目录、`~/.helve`、别人的仓库）
 2. 工具文件里拿不到 `common/paths.py` 的常量，**路径推导会重复**——这是有意接受的成本
 3. 一个坏掉的工具文件不会让整个注册表崩掉（注册是逐文件隔离的）
 
@@ -524,7 +524,7 @@ flowchart TD
     G --> H["run_pipeline<br/>逐节点加门禁"]
 ```
 
-**`grill-me` 的特例**值得单说。上游 Matt 的 `grill-me` 是 `grilling` 的一个入口包装。在 Agent-Smith 里，用户输入 `/grill-me` 时：
+**`grill-me` 的特例**值得单说。上游 Matt 的 `grill-me` 是 `grilling` 的一个入口包装。在 Helve 里，用户输入 `/grill-me` 时：
 
 ```python
 grill_me_chain_entry = (

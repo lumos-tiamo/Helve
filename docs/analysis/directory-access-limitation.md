@@ -185,7 +185,7 @@ if result.boundary_block and self.whitelist.is_path_allowed(p):
 
 **原理**: 配置文件中预先声明常用目录
 
-**配置示例**: `~/.agent-smith/config.yaml`
+**配置示例**: `~/.helve/config.yaml`
 
 ```yaml
 llm:

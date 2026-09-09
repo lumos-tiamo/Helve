@@ -11,7 +11,7 @@
 
 ## 1. 定位与责任边界
 
-`shell/` 是 Agent-Smith 的终端原生前端。它使用 Ink/React 呈现交互界面，使用
+`shell/` 是 Helve 的终端原生前端。它使用 Ink/React 呈现交互界面，使用
 Zustand 保存前端状态，通过 HTTP/SSE 连接 `server/`。
 
 ```text
@@ -30,7 +30,7 @@ UI 组件不直接 import `engine/`，也不应把显示文本反向当作执行
 
 | 项目 | 当前选择 |
 | --- | --- |
-| 包 | `smith-shell@0.3.1`，ESM，Node.js 22+ |
+| 包 | `helve-shell@0.3.1`，ESM，Node.js 22+ |
 | 终端 UI | Ink 7 + React 19 |
 | 状态 | Zustand 5 (`zustand/vanilla` + React selector) |
 | 正文 Markdown | `@assistant-ui/react-ink-markdown` |
@@ -63,7 +63,7 @@ npm pack --dry-run
 
 ```text
 smith CLI
-  → bin/smith.js
+  → bin/helve.js
   → dist/index.js / SmithApp
   → NodeBridge.boot()
       → ensureLocalServer()
@@ -84,7 +84,7 @@ Composer input
 技能开关、token/observability 刷新和审批提交；`api.ts` 只定义 HTTP/SSE 协议和
 超时控制。除此之外，`api.ts` 还承担两条安全职责：
 
-- 每个请求注入 `Authorization: Bearer <~/.agent-smith/auth_token>`（来自
+- 每个请求注入 `Authorization: Bearer <~/.helve/auth_token>`（来自
   `auth.ts` 的 `localAuthHeaders`）；
 - 入站文本的净化边界：所有来自服务端的文本在解码时统一经过 `sanitize.ts` 的
   `sanitizeTerminalText`/`sanitizeUnknownText` 处理，而不是靠每个 renderer

@@ -25,7 +25,7 @@ SUPPORTED_PROTOCOL_VERSIONS = {
     "2025-03-26",
     "2024-11-05",
 }
-CLIENT_INFO = {"name": "agent-smith", "version": "0.2.0"}
+CLIENT_INFO = {"name": "helve", "version": "0.2.0"}
 MAX_TOOL_NAME_LENGTH = 64
 MAX_MCP_RESPONSE_BYTES = 1024 * 1024
 # Whole-stream backstop for SSE and stdio: the per-message cap resets on

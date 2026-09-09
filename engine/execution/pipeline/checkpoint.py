@@ -47,7 +47,7 @@ class SessionCheckpoint:
     provisional_outputs: dict = field(default_factory=dict)
     # The skill running at ``skill_chain_index`` when this checkpoint was
     # written.  The index alone does not identify a node: pipelines are re-read
-    # from YAML on every run and ``~/.agent-smith/pipelines/`` may override
+    # from YAML on every run and ``~/.helve/pipelines/`` may override
     # them, so editing a chain while it waits for an answer is supported — and
     # an index that still fits the edited chain then points at a different
     # node.  Empty means a checkpoint written before this field existed; that

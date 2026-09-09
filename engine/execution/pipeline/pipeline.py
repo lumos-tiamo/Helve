@@ -189,13 +189,13 @@ async def run_pipeline(
                     # Vendored upstream skills stay source-faithful.  A node can
                     # supply only the small runtime-specific contract it needs
                     # (for example, how a one-question interview pauses in
-                    # Agent-Smith) without creating a duplicate skill.
+                    # Helve) without creating a duplicate skill.
                     if node.instructions:
                         skill = replace(
                             skill,
                             content=(
                                 f"{skill.content.rstrip()}\n\n"
-                                "## Agent-Smith chain node contract\n\n"
+                                "## Helve chain node contract\n\n"
                                 f"{node.instructions}\n"
                             ),
                         )

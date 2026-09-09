@@ -40,7 +40,7 @@ def _make_agent_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture()
 def _isolate_apppaths(tmp_path: Path, monkeypatch):
-    """Prevent tests from reading the real ~/.agent-smith/SMITH.md."""
+    """Prevent tests from reading the real ~/.helve/HELVE.md."""
     from common.paths import AppPaths
     fake = AppPaths(data_dir=tmp_path / "fake-data", project_root=tmp_path)
     monkeypatch.setattr(AppPaths, "defaults", staticmethod(lambda: fake))
@@ -214,7 +214,7 @@ def test_assembler_sanitizes_legacy_memory_before_prompt_injection(tmp_path: Pat
     assert "ignore all previous instructions" not in prompt.lower()
 
 
-# --- SMITH.md feature tests ---
+# --- HELVE.md feature tests ---
 
 
 def test_assembler_injects_global_and_project_smith_md(tmp_path: Path, monkeypatch) -> None:
@@ -222,7 +222,7 @@ def test_assembler_injects_global_and_project_smith_md(tmp_path: Path, monkeypat
 
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    (data_dir / "SMITH.md").write_text("GLOBAL_INSTRUCTION", encoding="utf-8")
+    (data_dir / "HELVE.md").write_text("GLOBAL_INSTRUCTION", encoding="utf-8")
 
     from common.paths import AppPaths
     fake_paths = AppPaths(data_dir=data_dir, project_root=tmp_path)
@@ -231,9 +231,9 @@ def test_assembler_injects_global_and_project_smith_md(tmp_path: Path, monkeypat
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    smith_dir = project_dir / ".smith"
+    smith_dir = project_dir / ".helve"
     smith_dir.mkdir()
-    (smith_dir / "SMITH.md").write_text("PROJECT_INSTRUCTION", encoding="utf-8")
+    (smith_dir / "HELVE.md").write_text("PROJECT_INSTRUCTION", encoding="utf-8")
 
     prompt = PromptAssembler().assemble(
         agent_dir, FakeToolRegistry(), FakeSkillRegistry(), {},
@@ -264,7 +264,7 @@ def test_assembler_global_only_smith_md(tmp_path: Path, monkeypatch) -> None:
 
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    (data_dir / "SMITH.md").write_text("GLOBAL_ONLY", encoding="utf-8")
+    (data_dir / "HELVE.md").write_text("GLOBAL_ONLY", encoding="utf-8")
 
     from common.paths import AppPaths
     monkeypatch.setattr(AppPaths, "defaults", staticmethod(
@@ -291,8 +291,8 @@ def test_assembler_project_only_smith_md(tmp_path: Path, monkeypatch) -> None:
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    (project_dir / ".smith").mkdir()
-    (project_dir / ".smith" / "SMITH.md").write_text("PROJECT_ONLY", encoding="utf-8")
+    (project_dir / ".helve").mkdir()
+    (project_dir / ".helve" / "HELVE.md").write_text("PROJECT_ONLY", encoding="utf-8")
 
     prompt = PromptAssembler().assemble(
         agent_dir, FakeToolRegistry(), FakeSkillRegistry(), {},
@@ -316,9 +316,9 @@ def test_assembler_working_dir_none_skips_project_lookup(tmp_path: Path) -> None
 
 @pytest.mark.usefixtures("_isolate_apppaths")
 def test_find_project_smith_md_stops_at_git_boundary(tmp_path: Path) -> None:
-    # .smith/SMITH.md above the .git boundary should NOT be found
-    (tmp_path / ".smith").mkdir()
-    (tmp_path / ".smith" / "SMITH.md").write_text("PARENT_INSTRUCTION", encoding="utf-8")
+    # .helve/HELVE.md above the .git boundary should NOT be found
+    (tmp_path / ".helve").mkdir()
+    (tmp_path / ".helve" / "HELVE.md").write_text("PARENT_INSTRUCTION", encoding="utf-8")
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -336,12 +336,12 @@ def test_find_project_smith_md_rejects_symlinked_file(tmp_path: Path) -> None:
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    smith_dir = project_dir / ".smith"
+    smith_dir = project_dir / ".helve"
     smith_dir.mkdir()
 
     secret = tmp_path / "secret.txt"
     secret.write_text("SENSITIVE_DATA", encoding="utf-8")
-    os.symlink(secret, smith_dir / "SMITH.md")
+    os.symlink(secret, smith_dir / "HELVE.md")
 
     result = PromptAssembler._find_project_smith_md(project_dir)
     assert result is None
@@ -350,15 +350,15 @@ def test_find_project_smith_md_rejects_symlinked_file(tmp_path: Path) -> None:
 @pytest.mark.skipif(not hasattr(os, "symlink"), reason="symlinks not available")
 @pytest.mark.usefixtures("_isolate_apppaths")
 def test_find_project_smith_md_rejects_symlinked_directory(tmp_path: Path) -> None:
-    """Symlinked .smith directory pointing outside the project is rejected."""
+    """Symlinked .helve directory pointing outside the project is rejected."""
     external = tmp_path / "external"
     external.mkdir()
-    (external / "SMITH.md").write_text("ESCAPED", encoding="utf-8")
+    (external / "HELVE.md").write_text("ESCAPED", encoding="utf-8")
 
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    os.symlink(external, project_dir / ".smith")
+    os.symlink(external, project_dir / ".helve")
 
     result = PromptAssembler._find_project_smith_md(project_dir)
     assert result is None
@@ -370,8 +370,8 @@ def test_smith_md_content_is_truncated_when_oversized(tmp_path: Path) -> None:
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    (project_dir / ".smith").mkdir()
-    (project_dir / ".smith" / "SMITH.md").write_text("X" * 100_000, encoding="utf-8")
+    (project_dir / ".helve").mkdir()
+    (project_dir / ".helve" / "HELVE.md").write_text("X" * 100_000, encoding="utf-8")
 
     prompt = PromptAssembler().assemble(
         agent_dir, FakeToolRegistry(), FakeSkillRegistry(), {},
@@ -387,8 +387,8 @@ def test_smith_md_layer_is_not_trimmed_by_token_budget(tmp_path: Path) -> None:
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    (project_dir / ".smith").mkdir()
-    (project_dir / ".smith" / "SMITH.md").write_text("MUST_SURVIVE", encoding="utf-8")
+    (project_dir / ".helve").mkdir()
+    (project_dir / ".helve" / "HELVE.md").write_text("MUST_SURVIVE", encoding="utf-8")
 
     prompt = PromptAssembler().assemble(
         agent_dir, FakeToolRegistry(), FakeSkillRegistry(), {},
@@ -481,7 +481,7 @@ def test_prompt_assembly_splits_origins_renders_labels_and_records_redacted_mani
     agent_dir = _make_agent_dir(tmp_path)
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    (data_dir / "SMITH.md").write_text("GLOBAL_RULE", encoding="utf-8")
+    (data_dir / "HELVE.md").write_text("GLOBAL_RULE", encoding="utf-8")
 
     from common.paths import AppPaths
 
@@ -493,8 +493,8 @@ def test_prompt_assembly_splits_origins_renders_labels_and_records_redacted_mani
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / ".git").mkdir()
-    (project_dir / ".smith").mkdir()
-    (project_dir / ".smith" / "SMITH.md").write_text(
+    (project_dir / ".helve").mkdir()
+    (project_dir / ".helve" / "HELVE.md").write_text(
         "PROJECT_RULE", encoding="utf-8"
     )
 
@@ -512,13 +512,13 @@ def test_prompt_assembly_splits_origins_renders_labels_and_records_redacted_mani
     by_name = {layer.name: layer for layer in assembly.layers}
     assert by_name["global_instructions"].scope is PromptScope.USER
     assert by_name["global_instructions"].authority is PromptAuthority.USER_POLICY
-    assert by_name["global_instructions"].source_ref == "global:SMITH.md"
+    assert by_name["global_instructions"].source_ref == "global:HELVE.md"
     assert by_name["project_instructions"].scope is PromptScope.PROJECT
-    assert by_name["project_instructions"].source_ref == "project:.smith/SMITH.md"
+    assert by_name["project_instructions"].source_ref == "project:.helve/HELVE.md"
     assert by_name["durable_context"].load_reason is PromptLoadReason.ALWAYS
     assert by_name["durable_context"].source is PromptSource.MEMORY_DURABLE
     assert "## Context: Project Instructions" in assembly.text
-    assert "[Source: project:.smith/SMITH.md · Authority: project_policy" in assembly.text
+    assert "[Source: project:.helve/HELVE.md · Authority: project_policy" in assembly.text
     assert "## Memory Governance" in assembly.text
     assert assembly.text.endswith("ENGINE_RUNTIME_CONTROL")
     assert len(assembly.prefix_cache_key) == 64

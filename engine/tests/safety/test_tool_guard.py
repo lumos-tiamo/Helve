@@ -71,12 +71,12 @@ def test_pip_install_in_user_project_allowed():
 
 
 def test_pip_install_into_platform_blocked():
-    assert not _check("pip install --target ~/Downloads/Agent-Smith/engine requests").allowed
+    assert not _check("pip install --target ~/Downloads/Helve/engine requests").allowed
 
 
 def test_pip_install_with_platform_path_before_blocked():
     # 平台路径出现在 pip install 之前也要拦（lookahead 与顺序无关）
-    assert not _check("PIP_TARGET=~/Downloads/Agent-Smith/vendor pip install requests").allowed
+    assert not _check("PIP_TARGET=~/Downloads/Helve/vendor pip install requests").allowed
 
 
 def test_uv_add_in_user_project_allowed():
@@ -84,13 +84,13 @@ def test_uv_add_in_user_project_allowed():
 
 
 def test_rm_platform_data_blocked():
-    assert not _check("rm -rf ~/.agent-smith/agent").allowed
+    assert not _check("rm -rf ~/.helve/agent").allowed
 
 
 def test_memory_views_may_be_written_by_the_memory_path():
-    memory = Path.home() / ".agent-smith" / "agent" / "memory"
+    memory = Path.home() / ".helve" / "agent" / "memory"
     assert _check(
-        "printf '%s\\n' event >> ~/.agent-smith/agent/memory/recent.jsonl"
+        "printf '%s\\n' event >> ~/.helve/agent/memory/recent.jsonl"
     ).allowed
     assert _check(
         f"printf '%s\\n' event >> {memory / 'recent.jsonl'}"
@@ -104,7 +104,7 @@ def test_memory_views_may_be_written_by_the_memory_path():
 
 
 def test_platform_writes_outside_memory_remain_blocked():
-    agent_dir = Path.home() / ".agent-smith" / "agent"
+    agent_dir = Path.home() / ".helve" / "agent"
     memory = agent_dir / "memory"
     assert not _check(
         f"printf '%s\\n' token > {agent_dir / 'config.yaml'}"
@@ -119,7 +119,7 @@ def test_platform_writes_outside_memory_remain_blocked():
 
 def test_combined_redirect_to_platform_data_blocked():
     """``&>`` and ``&>>`` (stdout+stderr) redirects into platform data must be blocked."""
-    agent_dir = Path.home() / ".agent-smith" / "agent"
+    agent_dir = Path.home() / ".helve" / "agent"
     assert not _check(f"cmd &> {agent_dir / 'evil.log'}").allowed
     assert not _check(f"cmd &>> {agent_dir / 'evil.log'}").allowed
 
@@ -127,14 +127,14 @@ def test_combined_redirect_to_platform_data_blocked():
 def test_extract_shell_paths_captures_combined_redirect():
     from engine.safety.tool_guard import _extract_shell_write_paths
 
-    write_paths = _extract_shell_write_paths("cmd &> ~/.agent-smith/agent/x")
+    write_paths = _extract_shell_write_paths("cmd &> ~/.helve/agent/x")
     assert any(p.endswith("x") for p in write_paths)
-    write_paths = _extract_shell_write_paths("cmd &>> ~/.agent-smith/agent/x")
+    write_paths = _extract_shell_write_paths("cmd &>> ~/.helve/agent/x")
     assert any(p.endswith("x") for p in write_paths)
 
 
 def test_file_tools_only_write_approved_memory_views_in_platform_data():
-    agent_dir = Path.home() / ".agent-smith" / "agent"
+    agent_dir = Path.home() / ".helve" / "agent"
     memory = agent_dir / "memory"
     assert _check_tool(
         "write_file", {"path": str(memory / "recent.jsonl"), "content": "event"}
@@ -151,7 +151,7 @@ def test_file_tools_only_write_approved_memory_views_in_platform_data():
 
 
 def test_memory_exception_does_not_bypass_fact_gate():
-    memory_file = Path.home() / ".agent-smith" / "agent" / "memory" / "recent.jsonl"
+    memory_file = Path.home() / ".helve" / "agent" / "memory" / "recent.jsonl"
     call = ToolCall(
         id="t",
         name="shell",
@@ -318,7 +318,7 @@ def test_project_instruction_whitelist_allows_only_smith_md(tmp_path: Path):
     project_root = tmp_path / "project"
     project_root.mkdir()
     guard = _builtin_guard(tmp_path / "missing-rules.json", allowed_dirs=[])
-    smith_file = project_root / ".smith" / "SMITH.md"
+    smith_file = project_root / ".helve" / "HELVE.md"
 
     assert not guard.check(
         ToolCall(id="t", name="write_file", arguments={"path": str(smith_file), "content": "rules"})
@@ -648,7 +648,7 @@ def test_runtime_provider_configuration_is_non_delegable_even_after_user_approva
         ToolCall(
             id="runtime-config",
             name="read_file",
-            arguments={"path": str(Path.home() / ".agent-smith" / "config.yaml")},
+            arguments={"path": str(Path.home() / ".helve" / "config.yaml")},
         )
     )
 
@@ -794,10 +794,10 @@ def test_other_git_metadata_reads_stay_ordinary(tmp_path: Path):
 
 def test_cp_install_dd_into_platform_data_require_high_risk_approval():
     for command in (
-        "cp notes.txt ~/.agent-smith/agent/notes",
-        "install notes.txt ~/.agent-smith/agent/notes",
-        "dd if=notes.txt of=~/.agent-smith/agent/notes",
-        "cp notes.txt ~/.AGENT-SMITH/agent/notes",
+        "cp notes.txt ~/.helve/agent/notes",
+        "install notes.txt ~/.helve/agent/notes",
+        "dd if=notes.txt of=~/.helve/agent/notes",
+        "cp notes.txt ~/.HELVE/agent/notes",
     ):
         result = _check(command)
         assert not result.allowed, command

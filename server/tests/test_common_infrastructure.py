@@ -78,6 +78,24 @@ def test_app_paths_honors_explicit_project_root(monkeypatch, tmp_path: Path) -> 
     skill = project_root / "agents" / "skills" / "demo"
     skill.mkdir(parents=True)
     (skill / "SKILL.md").write_text("---\nname: demo\n---\n")
+    monkeypatch.setenv("HELVE_PROJECT_ROOT", str(project_root))
+
+    assert AppPaths.defaults().project_root == project_root.resolve()
+
+
+def test_app_paths_still_honors_the_pre_rename_project_root_variable(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """A shell profile written before the Helve rename must keep working."""
+    project_root = tmp_path / "project"
+    (project_root / "agents" / "smith").mkdir(parents=True)
+    (project_root / "agents" / "smith" / "config.yaml").write_text("name: Smith\n")
+    (project_root / "agents" / "identities").mkdir()
+    (project_root / "agents" / "identities" / "smith.yaml").write_text("id: smith\n")
+    skill = project_root / "agents" / "skills" / "demo"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text("---\nname: demo\n---\n")
+    monkeypatch.delenv("HELVE_PROJECT_ROOT", raising=False)
     monkeypatch.setenv("AGENT_SMITH_PROJECT_ROOT", str(project_root))
 
     assert AppPaths.defaults().project_root == project_root.resolve()
@@ -88,7 +106,7 @@ def test_app_paths_rejects_an_explicit_root_without_smith_runtime_assets(
 ) -> None:
     project_root = tmp_path / "project"
     (project_root / "agents").mkdir(parents=True)
-    monkeypatch.setenv("AGENT_SMITH_PROJECT_ROOT", str(project_root))
+    monkeypatch.setenv("HELVE_PROJECT_ROOT", str(project_root))
 
     with pytest.raises(RuntimeError, match="runtime assets"):
         AppPaths.defaults()
@@ -126,9 +144,12 @@ def test_app_paths_requires_an_explicit_root_when_a_wheel_has_no_runtime_assets(
     empty_cwd.mkdir()
     monkeypatch.setattr(paths_module, "__file__", str(package_path))
     monkeypatch.chdir(empty_cwd)
+    # Both names must go: the legacy one is still honoured as a fallback, so
+    # leaving it set would satisfy root discovery and the raise never happens.
+    monkeypatch.delenv("HELVE_PROJECT_ROOT", raising=False)
     monkeypatch.delenv("AGENT_SMITH_PROJECT_ROOT", raising=False)
 
-    with pytest.raises(RuntimeError, match="AGENT_SMITH_PROJECT_ROOT"):
+    with pytest.raises(RuntimeError, match="HELVE_PROJECT_ROOT"):
         AppPaths.defaults()
 
 
@@ -141,7 +162,7 @@ def test_config_exposes_paths_as_a_lazy_app_paths_value(monkeypatch, tmp_path: P
     skill = project_root / "agents" / "skills" / "demo"
     skill.mkdir(parents=True)
     (skill / "SKILL.md").write_text("---\nname: demo\n---\n")
-    monkeypatch.setenv("AGENT_SMITH_PROJECT_ROOT", str(project_root))
+    monkeypatch.setenv("HELVE_PROJECT_ROOT", str(project_root))
     config.reset_paths()
 
     try:
@@ -287,7 +308,7 @@ def test_app_paths_keeps_installed_skills_when_the_shipped_source_is_empty(
     monkeypatch, tmp_path: Path
 ) -> None:
     package_data = tmp_path / "package-data"
-    (package_data / "agent_smith_common" / "builtin_skills").mkdir(parents=True)
+    (package_data / "helve_common" / "builtin_skills").mkdir(parents=True)
     monkeypatch.setattr(
         "common.paths.sysconfig.get_path", lambda _name: str(package_data)
     )
@@ -524,7 +545,7 @@ def test_wheel_data_files_reproduce_every_bundled_skill_file() -> None:
         (repo_root / "common" / "pyproject.toml").read_text(encoding="utf-8")
     )
     skills_root = repo_root / "agents" / "skills"
-    prefix = "agent_smith_common/builtin_skills/"
+    prefix = "helve_common/builtin_skills/"
     declared = {
         target: set(files)
         for target, files in pyproject["tool"]["setuptools"]["data-files"].items()
@@ -814,3 +835,41 @@ def test_get_app_db_runs_schema_setup_once_for_concurrent_callers(
             config.reset_paths()
 
     asyncio.run(run())
+
+
+def test_legacy_data_root_is_migrated_instead_of_abandoned(tmp_path: Path) -> None:
+    """The rename must move the old data root, not silently start an empty one.
+
+    ``~/.agent-smith`` held memory, sessions and the audit chain.  Creating a
+    fresh ``~/.helve`` beside it would look like a clean install and lose all
+    of it, which is the one failure mode of this rename that destroys data.
+    """
+    legacy = tmp_path / ".agent-smith"
+    (legacy / "sqlite").mkdir(parents=True)
+    (legacy / "agent").mkdir()
+    (legacy / "sqlite" / "agent-smith.sqlite").write_text("db")
+    (legacy / "sqlite" / "agent-smith.sqlite-wal").write_text("wal")
+    (legacy / "audit.jsonl").write_text("chain")
+
+    app_paths = AppPaths(data_dir=tmp_path / ".helve", project_root=tmp_path)
+    paths_module._migrate_legacy_data_dir(app_paths.data_dir)
+
+    assert not legacy.exists()
+    assert (app_paths.data_dir / "audit.jsonl").read_text() == "chain"
+    assert app_paths.sqlite_path.read_text() == "db"
+    assert app_paths.sqlite_path.with_name("helve.sqlite-wal").read_text() == "wal"
+
+
+def test_migration_does_not_merge_into_an_existing_data_root(tmp_path: Path) -> None:
+    """Two roots must never be merged: that would fork the audit chain."""
+    legacy = tmp_path / ".agent-smith"
+    legacy.mkdir()
+    (legacy / "audit.jsonl").write_text("old chain")
+    current = tmp_path / ".helve"
+    current.mkdir()
+    (current / "audit.jsonl").write_text("live chain")
+
+    paths_module._migrate_legacy_data_dir(current)
+
+    assert legacy.exists()
+    assert (current / "audit.jsonl").read_text() == "live chain"

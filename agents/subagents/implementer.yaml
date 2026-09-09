@@ -1,4 +1,4 @@
-schema: agentsmith.subagent/v1
+schema: helve.subagent/v1
 id: implementer
 name: Implementer
 description: Write-capable — make a scoped, self-contained change and verify it

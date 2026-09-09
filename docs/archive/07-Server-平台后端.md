@@ -49,7 +49,7 @@ graph LR
 | --- | --- | --- |
 | GET | `/api/health` | 返回 `status`、server version 和 `nonce`；无 router 鉴权。定义在 `main.py`，不属于任何 router。 |
 
-`nonce` 回显 `SMITH_SERVER_NONCE` 环境变量（未设置时为 `null`）。Shell 用它分辨"自己 spawn 的 server"：只有 nonce 与自己启动时注入的值一致才认领；`null` 意味着"不是我启动的，不要采纳"（`main.py`，`test_health_nonce.py`）。
+`nonce` 回显 `HELVE_SERVER_NONCE` 环境变量（未设置时为 `null`）。Shell 用它分辨"自己 spawn 的 server"：只有 nonce 与自己启动时注入的值一致才认领；`null` 意味着"不是我启动的，不要采纳"（`main.py`，`test_health_nonce.py`）。
 
 ### Agent、会话与消息
 
@@ -77,7 +77,7 @@ graph LR
 | GET | `/api/agent/skills` | 列出已发现技能和其启用状态。 |
 | PUT | `/api/agent/skills/{skill_name}` | 更新单个 skill 的启用状态。 |
 | GET | `/api/agent/mcp` | 只读列出配置的 MCP server。 |
-| PUT | `/api/agent/project-instructions` | 为给定 working directory 初始化 `.smith/SMITH.md`。 |
+| PUT | `/api/agent/project-instructions` | 为给定 working directory 初始化 `.helve/HELVE.md`。 |
 
 ### Run 与审批
 
@@ -143,7 +143,7 @@ Pydantic schema 集中在 `server/app/schemas/`，有一个例外：config route
 | `run_state_service.py` | Engine run state store 的只读/恢复/审批适配。 |
 | `skill_service.py` | 技能发现列表与启用状态更新。 |
 | `mcp_service.py` | 只读列出配置的 MCP server。 |
-| `project_instruction_service.py` | 为 working directory 初始化 `.smith/SMITH.md`。 |
+| `project_instruction_service.py` | 为 working directory 初始化 `.helve/HELVE.md`。 |
 | `observability_service.py` | Run 摘要、trace、incident、health 的只读投影。 |
 | `token_stats_service.py` | token 用量事件的持久化、聚合与 generation sink。 |
 | `auto_task_service.py` | 自动任务 CRUD 与后台执行。 |

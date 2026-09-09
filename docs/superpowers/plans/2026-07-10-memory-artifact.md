@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a polished, self-contained HTML artifact that explains Agent-Smith's Memory lifecycle and design trade-offs.
+**Goal:** Build a polished, self-contained HTML artifact that explains Helve's Memory lifecycle and design trade-offs.
 
 **Architecture:** Create one standalone document at `docs/artifacts/memory-design.html` with inline CSS and JavaScript so it can be opened without a build step. Use semantic sections for the dossier narrative, CSS grid/flex for responsive layout, and a small event-driven controller for lifecycle navigation and detail-panel updates.
 

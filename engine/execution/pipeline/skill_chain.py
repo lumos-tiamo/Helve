@@ -75,7 +75,7 @@ def _scan_content_dir(content_dir: Path, attr: str, registry: dict) -> None:
     for py_file in sorted(content_dir.rglob("*.py")):
         if py_file.name.startswith("_"):
             continue
-        module_name = f"agent_smith_content_{sha1(str(py_file.resolve()).encode()).hexdigest()}"
+        module_name = f"helve_content_{sha1(str(py_file.resolve()).encode()).hexdigest()}"
         try:
             spec = importlib.util.spec_from_file_location(module_name, py_file)
             if spec is None or spec.loader is None:

@@ -43,23 +43,25 @@ def _config_paths() -> tuple[Path, Path, Path]:
 # (path + mtime + size).  Config resolution runs on every model route lookup,
 # so re-reading unchanged YAML files on each call is wasted disk I/O; edits to
 # any level are still picked up because the fingerprint changes.  Environment
-# overrides (AGENTSMITH_LLM_*) are the lowest-precedence layer and are part of
+# overrides (HELVE_LLM_*) are the lowest-precedence layer and are part of
 # the fingerprint so a change invalidates the cache.
 _BASE_MERGE_CACHE: tuple[tuple[object, ...], dict[str, Any]] | None = None
 
+# Each setting reads the current HELVE_ name first and falls back to the
+# pre-rename AGENTSMITH_ name, so an existing shell profile keeps working.
 _ENV_LLM_KEYS = (
-    ("AGENTSMITH_LLM_API_KEY", "api_key"),
-    ("AGENTSMITH_LLM_BASE_URL", "base_url"),
-    ("AGENTSMITH_LLM_MODEL", "model"),
-    ("AGENTSMITH_LLM_PROVIDER", "provider"),
+    (("HELVE_LLM_API_KEY", "AGENTSMITH_LLM_API_KEY"), "api_key"),
+    (("HELVE_LLM_BASE_URL", "AGENTSMITH_LLM_BASE_URL"), "base_url"),
+    (("HELVE_LLM_MODEL", "AGENTSMITH_LLM_MODEL"), "model"),
+    (("HELVE_LLM_PROVIDER", "AGENTSMITH_LLM_PROVIDER"), "provider"),
 )
 
 
 def _env_defaults() -> dict[str, Any]:
     """LLM settings sourced from the environment, as the lowest-precedence layer."""
     env_llm: dict[str, str] = {}
-    for env_key, cfg_key in _ENV_LLM_KEYS:
-        val = os.environ.get(env_key)
+    for env_keys, cfg_key in _ENV_LLM_KEYS:
+        val = next((v for v in map(os.environ.get, env_keys) if v), None)
         if val:
             env_llm[cfg_key] = val
     if not env_llm:
@@ -409,9 +411,9 @@ def resolve_llm_config(
 
     Configuration files are the only source of route settings.  Levels (lower
     overrides upper):
-      1. Platform:  ~/.agent-smith/config.yaml
+      1. Platform:  ~/.helve/config.yaml
       2. Smith seed: agents/smith/config.yaml
-      3. Smith runtime: ~/.agent-smith/agent/config.yaml
+      3. Smith runtime: ~/.helve/agent/config.yaml
       4. Session:   dict passed at runtime
 
     ``llm.routes`` may override the base config for ``interactive``, ``gate``,

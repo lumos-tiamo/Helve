@@ -44,8 +44,8 @@ _REF_PATTERN = re.compile(r"\A[0-9a-fA-F]{7,40}\Z")
 # block on a passphrase prompt.  Both are supplied per invocation so the
 # snapshot never depends on -- or mutates -- the user's global git config.
 _RUN_CONFIG: tuple[str, ...] = (
-    "-c", "user.name=Agent-Smith",
-    "-c", "user.email=smith@agent-smith.local",
+    "-c", "user.name=Helve",
+    "-c", "user.email=smith@helve.local",
     "-c", "commit.gpgsign=false",
 )
 

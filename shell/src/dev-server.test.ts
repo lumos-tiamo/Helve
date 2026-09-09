@@ -14,8 +14,8 @@ function compatiblePaths(): Record<string, Record<string, object>> {
 
 async function assertConfiguredServerIsRejected(paths: Record<string, Record<string, object>>): Promise<void> {
   const originalFetch = globalThis.fetch;
-  const originalServerUrl = process.env.SMITH_SERVER_URL;
-  process.env.SMITH_SERVER_URL = "http://127.0.0.1:8140";
+  const originalServerUrl = process.env.HELVE_SERVER_URL;
+  process.env.HELVE_SERVER_URL = "http://127.0.0.1:8140";
   globalThis.fetch = async (input) => {
     const url = String(input);
     if (url.endsWith("/api/health")) return new Response("ok");
@@ -24,11 +24,11 @@ async function assertConfiguredServerIsRejected(paths: Record<string, Record<str
   };
 
   try {
-    await assert.rejects(ensureLocalServer(), /Configured SMITH_SERVER_URL points to an incompatible server/);
+    await assert.rejects(ensureLocalServer(), /Configured HELVE_SERVER_URL points to an incompatible server/);
   } finally {
     globalThis.fetch = originalFetch;
-    if (originalServerUrl === undefined) delete process.env.SMITH_SERVER_URL;
-    else process.env.SMITH_SERVER_URL = originalServerUrl;
+    if (originalServerUrl === undefined) delete process.env.HELVE_SERVER_URL;
+    else process.env.HELVE_SERVER_URL = originalServerUrl;
   }
 }
 
@@ -62,8 +62,8 @@ test("startup rejects an explicitly configured server missing a shell API operat
 
 test("a server whose health omits the staleness flag is rejected", async () => {
   const originalFetch = globalThis.fetch;
-  const originalServerUrl = process.env.SMITH_SERVER_URL;
-  process.env.SMITH_SERVER_URL = "http://127.0.0.1:8140";
+  const originalServerUrl = process.env.HELVE_SERVER_URL;
+  process.env.HELVE_SERVER_URL = "http://127.0.0.1:8140";
   // Every operation the shell needs is present — this is exactly the server the
   // shape probe used to wave through: old enough to predate the flag, which is
   // itself the evidence that it is running code from another era.
@@ -78,16 +78,16 @@ test("a server whose health omits the staleness flag is rejected", async () => {
     await assert.rejects(ensureLocalServer(), /too old to report whether its code is current/);
   } finally {
     globalThis.fetch = originalFetch;
-    if (originalServerUrl === undefined) delete process.env.SMITH_SERVER_URL;
-    else process.env.SMITH_SERVER_URL = originalServerUrl;
+    if (originalServerUrl === undefined) delete process.env.HELVE_SERVER_URL;
+    else process.env.HELVE_SERVER_URL = originalServerUrl;
   }
 });
 
 test("configured server URLs with a trailing slash preserve a sub-path prefix", async () => {
   const originalFetch = globalThis.fetch;
-  const originalServerUrl = process.env.SMITH_SERVER_URL;
+  const originalServerUrl = process.env.HELVE_SERVER_URL;
   const requests: string[] = [];
-  process.env.SMITH_SERVER_URL = "http://127.0.0.1:8140/smith/";
+  process.env.HELVE_SERVER_URL = "http://127.0.0.1:8140/smith/";
   globalThis.fetch = async (input) => {
     const url = String(input);
     requests.push(url);
@@ -107,7 +107,7 @@ test("configured server URLs with a trailing slash preserve a sub-path prefix", 
     ]);
   } finally {
     globalThis.fetch = originalFetch;
-    if (originalServerUrl === undefined) delete process.env.SMITH_SERVER_URL;
-    else process.env.SMITH_SERVER_URL = originalServerUrl;
+    if (originalServerUrl === undefined) delete process.env.HELVE_SERVER_URL;
+    else process.env.HELVE_SERVER_URL = originalServerUrl;
   }
 });

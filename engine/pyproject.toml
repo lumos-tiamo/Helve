@@ -1,5 +1,5 @@
 [project]
-name = "agent-smith-engine"
+name = "helve-engine"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -8,11 +8,11 @@ dependencies = [
     "aiosqlite>=0.21",
     "pypdf>=6.0",
     "pdfplumber>=0.11",
-    "agent-smith-common",
+    "helve-common",
 ]
 
 [tool.uv.sources]
-agent-smith-common = { path = "../common", editable = true }
+helve-common = { path = "../common", editable = true }
 
 [project.optional-dependencies]
 test = ["pytest>=8.0", "pytest-asyncio>=0.25"]

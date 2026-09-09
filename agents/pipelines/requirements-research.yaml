@@ -5,11 +5,11 @@ route: requirements-research
 steps:
   - skill: grilling
     gate: grilling_complete
-    await_user_input_marker: "<!-- agent-smith:await-user-input -->"
+    await_user_input_marker: "<!-- helve:await-user-input -->"
     infer_await_user_input_from_question: true
     allowed_tools: [read_file, read_pdf, render_pdf_page, list_dir, glob_files, grep, get_current_time]
     instructions: |
-      You are the upstream grilling skill inside Agent-Smith's requirements-research chain.
+      You are the upstream grilling skill inside Helve's requirements-research chain.
       Facts discoverable in the repository or sources must be looked up rather than asked.
       Resolve exactly one user-owned decision per reply and give a recommendation.
       If a decision remains, ask only that one question and do not research yet. If shared
@@ -31,7 +31,7 @@ steps:
 
   - skill: ecc-plan
     gate: plan_confirmed
-    await_user_input_marker: "<!-- agent-smith:await-user-input -->"
+    await_user_input_marker: "<!-- helve:await-user-input -->"
     infer_await_user_input_from_question: true
     allowed_tools: [read_file, read_pdf, render_pdf_page, list_dir, glob_files, grep, get_current_time]
     instructions: |

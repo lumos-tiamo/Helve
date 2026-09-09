@@ -102,7 +102,7 @@ def test_question_without_pause_marker_waits_instead_of_retrying_a_gate(
         SkillNode(
             "grilling",
             GateMustNotRun(),
-            await_user_input_marker="<!-- agent-smith:await-user-input -->",
+            await_user_input_marker="<!-- helve:await-user-input -->",
             infer_await_user_input_from_question=True,
         ),
     ])
@@ -151,7 +151,7 @@ def test_question_without_question_inference_still_runs_the_node_gate() -> None:
         SkillNode(
             "code-review",
             PassingGate(),
-            await_user_input_marker="<!-- agent-smith:await-user-input -->",
+            await_user_input_marker="<!-- helve:await-user-input -->",
         ),
     ])
 

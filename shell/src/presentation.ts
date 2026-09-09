@@ -31,15 +31,16 @@ export const USER_CARET = "❯";
 /** Label above a reasoning block; the terminal appends "..." while it streams. */
 export const THINKING_LABEL = "∴ thinking";
 
-export const SMITH_LOGO = [
-  "███████╗███╗   ███╗██╗████████╗██╗  ██╗",
-  "██╔════╝████╗ ████║██║╚══██╔══╝██║  ██║",
-  "███████╗██╔████╔██║██║   ██║   ███████║",
-  "╚════██║██║╚██╔╝██║██║   ██║   ██╔══██║",
-  "███████║██║ ╚═╝ ██║██║   ██║   ██║  ██║",
-  "╚══════╝╚═╝     ╚═╝╚═╝   ╚═╝   ╚═╝  ╚═╝",
+export const HELVE_LOGO = [
+  "██╗  ██╗███████╗██╗     ██╗   ██╗███████╗",
+  "██║  ██║██╔════╝██║     ██║   ██║██╔════╝",
+  "███████║█████╗  ██║     ██║   ██║█████╗  ",
+  "██╔══██║██╔══╝  ██║     ╚██╗ ██╔╝██╔══╝  ",
+  "██║  ██║███████╗███████╗ ╚████╔╝ ███████╗",
+  "╚═╝  ╚═╝╚══════╝╚══════╝  ╚═══╝  ╚══════╝",
 ];
 
-export const GHOST_BUDDY = ["  ─╥╥─  ", "▄██████▄", "██ ██ ██", " ██████ ", "╰╯╰╮╭╯╰╯"];
+/** The mark: a hammer reduced to head and haft — the helve is the part you hold. */
+export const HELVE_MARK = [" ▄████▄ ", " ██████ ", "   ██   ", "   ██   ", "   ▀▀   "];
 
 export const HERO_HINTS = ["`/` for commands", "`@` for skills", "Enter confirms", "Esc goes back", "`/help` for all"];

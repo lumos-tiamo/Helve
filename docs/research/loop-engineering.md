@@ -1,12 +1,12 @@
 # Loop Engineering 调研
 
-> 调研日期：2026-07-14。本文是对 [`cobusgreyling/loop-engineering`](https://github.com/cobusgreyling/loop-engineering) 的外部参考研究，不是 Agent-Smith 的实现规格。
+> 调研日期：2026-07-14。本文是对 [`cobusgreyling/loop-engineering`](https://github.com/cobusgreyling/loop-engineering) 的外部参考研究，不是 Helve 的实现规格。
 
 ## 结论
 
 Loop Engineering 不是一个新的 Agent runtime，也不试图替代模型、工具调用或 ReAct loop；它是让 AI 编码 Agent **长期、重复、可控地运行**的外层控制面。仓库把调度、项目技能、显式状态、隔离 worktree、实现者/验证者分离、MCP、人工闸门和预算组合成可复制的“业务闭环”。这一定位可由其 Markdown 模式库、starters、GitHub Actions 和独立 Node CLI 工具的结构看出。[仓库根目录](https://github.com/cobusgreyling/loop-engineering) [README](https://github.com/cobusgreyling/loop-engineering/blob/main/README.md)
 
-对 Agent-Smith 最值得借鉴的不是直接引入这套 TypeScript 工具，而是：将现在的单次任务运行时之上，补齐**可审计的 Run ledger、确定性止损、独立验证和按风险分级的自动化权限**。
+对 Helve 最值得借鉴的不是直接引入这套 TypeScript 工具，而是：将现在的单次任务运行时之上，补齐**可审计的 Run ledger、确定性止损、独立验证和按风险分级的自动化权限**。
 
 ## 它解决什么问题
 
@@ -37,24 +37,24 @@ Loop Engineering 不是一个新的 Agent runtime，也不试图替代模型、�
 ## 成熟度与边界
 
 - **有用且正在落地。** 仓库已有模式、starters、测试过的 CLI 源码、CI 审计以及 npm 发布流程；目前可见的仓库 release 为 v1.5.0（2026-06-30）。[发布页](https://github.com/cobusgreyling/loop-engineering/releases/tag/v1.5.0) [README：工具与入门](https://github.com/cobusgreyling/loop-engineering/blob/main/README.md#getting-started-5-minutes)
-- **不是完整编排引擎。** 它以跨工具的文档、脚手架和 CLI 为中心；真正的模型选择、调度后端、任务队列、身份认证、工具执行和故障恢复仍依赖 Claude/Codex/Grok、GitHub Actions 或使用者项目。因而它更像 Agent-Smith 的治理/运维层参考，而不是可直接嵌入的 engine 模块。[README](https://github.com/cobusgreyling/loop-engineering/blob/main/README.md) [工具目录](https://github.com/cobusgreyling/loop-engineering/tree/main/tools)
+- **不是完整编排引擎。** 它以跨工具的文档、脚手架和 CLI 为中心；真正的模型选择、调度后端、任务队列、身份认证、工具执行和故障恢复仍依赖 Claude/Codex/Grok、GitHub Actions 或使用者项目。因而它更像 Helve 的治理/运维层参考，而不是可直接嵌入的 engine 模块。[README](https://github.com/cobusgreyling/loop-engineering/blob/main/README.md) [工具目录](https://github.com/cobusgreyling/loop-engineering/tree/main/tools)
 - **评分是启发式，不是安全证明。** `loop-audit` 很多信号来自文件存在、命名或文本提示；它能防止遗漏基本工件，却不能证明 verifier 真独立、测试充分或模型决定正确。因此不能把 L3 分数当作自动化授权本身。[auditor 源码](https://github.com/cobusgreyling/loop-engineering/blob/main/tools/loop-audit/src/auditor.ts)
 - **并发控制仍在演进。** 文档已经把 parallel collision 列为 S2 风险，建议 worktree 和锁/队列；而当前公开的 #274 仍在讨论 multi-loop path locks。这意味着 worktree 隔离并不能单独解决同一文件、同一 issue 或同一状态文件的竞争。[失败模式](https://github.com/cobusgreyling/loop-engineering/blob/main/docs/failure-modes.md) [Issue #274](https://github.com/cobusgreyling/loop-engineering/issues/274)
 - **参考仓库自身也未宣称所有 loop 都无人值守。** `LOOP.md` 中 PR Babysitter、Dependency Sweeper、CI Sweeper 仍标注为手动或部分自动；这比“所有 Agent 都可自动修复”的叙述更可信，也说明应从窄场景开始。[LOOP.md：Automation status](https://github.com/cobusgreyling/loop-engineering/blob/main/LOOP.md#automation-status-2026-07-10)
 
-## 对 Agent-Smith 的可迁移方案
+## 对 Helve 的可迁移方案
 
 | 优先级 | 建议 | 落点与验收 |
 | --- | --- | --- |
 | P0 | 增加每个运行实例的结构化 `RunLedger`，而不是把尝试过程混入长期用户记忆 | 在 `engine/execution` 为 run 记录 goal、每轮 action、工具/测试证据、错误签名、tokens、状态和升级原因；只向下一轮注入裁剪后的事实摘要。连续同错、连续失败、迭代/预算超限必须产生终态事件。此思路直接对应 `loop-context` 的确定性 breaker。 |
-| P0 | 将验证升格为运行时关卡 | 对会写文件或发起外部副作用的任务，明确 `implement → isolated verify → human/allowlist action`；验收以测试命令、退出码、改动范围和 verifier 结论为准，不能只让同一轮模型自称完成。Agent-Smith 已有 `run_stream_with_runtime`、任务路由和 MCP 边界，适合在其运行编排边界加入该状态机。 |
+| P0 | 将验证升格为运行时关卡 | 对会写文件或发起外部副作用的任务，明确 `implement → isolated verify → human/allowlist action`；验收以测试命令、退出码、改动范围和 verifier 结论为准，不能只让同一轮模型自称完成。Helve 已有 `run_stream_with_runtime`、任务路由和 MCP 边界，适合在其运行编排边界加入该状态机。 |
 | P1 | 用风险等级控制自动化，而非按“是否用了 Agent”一刀切 | 先给定 L1（观察、摘要、提出建议）与 L2（worktree 内提出补丁）的产品契约；只有有预算、恢复/暂停开关、验证记录、denylist、人工升级路径的特定低风险模式才考虑 L3。此处应把 audit 作为**发布前检查**，不是授权替代品。 |
 | P1 | 多 Agent 并发前先引入声明式租约 | worktree 之外，对 `issue/PR/path/state-file` 获取带 TTL 的 lease；一个 run 退出或被取消后必须释放/标记。用结构化状态取代多个 agent 并写一份 Markdown，直接覆盖 Loop Engineering 尚在解决的 path-lock 空白。 |
-| P1 | 对齐配置、skills 与真实运行态 | 增加只读 health/audit：已加载 profile、可用 tools/MCP、强制 skill、测试命令、预算和状态 schema 是否相互匹配。重要的是从 Agent-Smith 的实际 `~/.agent-smith/agent/` 运行目录读取，而不是仅检查仓库模板。 |
+| P1 | 对齐配置、skills 与真实运行态 | 增加只读 health/audit：已加载 profile、可用 tools/MCP、强制 skill、测试命令、预算和状态 schema 是否相互匹配。重要的是从 Helve 的实际 `~/.helve/agent/` 运行目录读取，而不是仅检查仓库模板。 |
 | P2 | 保持“记忆”和“执行状态”两条线 | `recent.jsonl`/durable memory 解决跨会话学习；`RunLedger` 解决当前任务的去重、重试、止损和可复现排障。两者可互相引用，但不应互相充当源数据，否则短期错误与长篇工具输出会污染长期提示。 |
 
 建议的首个试点是 **L1 CI/Issue triage**：固定 cadence 或事件触发、只读工具、输出结构化报告和 `RunLedger`、无行动时早退；稳定一到两周后才允许它在独立 worktree 生成补丁。这样能先验证成本、误报率、升级质量和状态闭环，再扩展到自动修复。
 
 ## 不建议直接照搬
 
-不要将 `STATE.md`、`LOOP.md` 或 readiness score 当作 Agent-Smith 的唯一事实源；它们适合人类可读的运维界面，但并发、重试与权限决策必须落在可验证的结构化数据和运行时策略上。也不要先接入“全天候修复”：项目自己的失败模式明确列出了无限重试、验证戏剧、状态腐化、Token Burn 与并行碰撞，均应在 L1/L2 阶段用测试和运行记录量化后再扩大权限。[失败模式目录](https://github.com/cobusgreyling/loop-engineering/blob/main/docs/failure-modes.md)
+不要将 `STATE.md`、`LOOP.md` 或 readiness score 当作 Helve 的唯一事实源；它们适合人类可读的运维界面，但并发、重试与权限决策必须落在可验证的结构化数据和运行时策略上。也不要先接入“全天候修复”：项目自己的失败模式明确列出了无限重试、验证戏剧、状态腐化、Token Burn 与并行碰撞，均应在 L1/L2 阶段用测试和运行记录量化后再扩大权限。[失败模式目录](https://github.com/cobusgreyling/loop-engineering/blob/main/docs/failure-modes.md)

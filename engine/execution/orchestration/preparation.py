@@ -379,7 +379,7 @@ async def prepare_runtime(
         except Exception as e:
             logger.error("Failed to load built-in hooks: %s", e, exc_info=True)
 
-    # 2. 加载用户自定义 Hook（~/.agent-smith/hooks.yaml）（可选）
+    # 2. 加载用户自定义 Hook（~/.helve/hooks.yaml）（可选）
     user_hooks_config = state_dir / "hooks.yaml"
     if user_hooks_config.exists():
         try:
