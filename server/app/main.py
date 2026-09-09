@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import json
 import os
 import re
 import sys
@@ -161,6 +162,48 @@ app.add_middleware(
 
 app.include_router(agent.router, dependencies=[Depends(require_auth)])
 app.include_router(config.router, dependencies=[Depends(require_auth)])
+
+_CONSOLE_DIST = Path(__file__).resolve().parents[2] / "web" / "dist"
+
+
+def _mount_console() -> None:
+    """Serve the built observability console at /console, if it was built.
+
+    The token is injected into the page rather than prompted for.  That is not
+    a weaker posture than it looks: CORS already restricts the API to localhost
+    origins, so no other site can read a response, and any process running as
+    this user could read ``~/.helve/auth_token`` directly anyway.  What the
+    injection removes is a paste step, not a barrier.
+
+    An unbuilt console is a normal state -- the backend does not depend on it --
+    so a missing dist/ leaves the route absent instead of failing startup.
+    """
+    if not (_CONSOLE_DIST / "index.html").is_file():
+        return
+
+    from fastapi.responses import HTMLResponse
+    from fastapi.staticfiles import StaticFiles
+
+    @app.get("/console", include_in_schema=False)
+    @app.get("/console/", include_in_schema=False)
+    async def console_index() -> HTMLResponse:
+        html = (_CONSOLE_DIST / "index.html").read_text(encoding="utf-8")
+        # json.dumps rather than an f-string: the token is generated, but a
+        # value that ever contained a quote would otherwise break out of the
+        # script tag it is written into.
+        injected = f"<script>window.__HELVE_TOKEN__={json.dumps(get_local_token())}</script>"
+        return HTMLResponse(html.replace("</head>", f"{injected}</head>", 1))
+
+    # Hashed asset filenames, so they are safe to serve without auth and are
+    # the only thing left under this prefix.
+    app.mount(
+        "/console/assets",
+        StaticFiles(directory=_CONSOLE_DIST / "assets"),
+        name="console-assets",
+    )
+
+
+_mount_console()
 
 
 _STARTED_AT = time.time()

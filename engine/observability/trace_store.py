@@ -34,6 +34,19 @@ _SAFE_METRIC_KEYS = {
     "cache_read_tokens",
     "cache_write_tokens",
     "reasoning_tokens",
+    # Prompt-assembly metrics.  These are counts, not credentials, and every
+    # one of them was silently written as "[REDACTED]" because the key-name
+    # rule sees the "token" substring.  Nothing read the prompt manifest, so
+    # nothing noticed until the console tried to chart it -- which is why the
+    # allowlist has to be checked against the *producers*, not just extended
+    # when someone happens to look.
+    #   engine.context.assembler.PromptManifest → token_estimate (per layer)
+    #   engine.context.assembler.PromptPlan     → the four budget figures
+    "token_estimate",
+    "token_budget",
+    "source_tokens",
+    "required_tokens",
+    "rendered_tokens",
 }
 _MAX_VALUE_CHARS = 4096
 _MAX_DEPTH = 4

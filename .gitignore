@@ -25,3 +25,5 @@ tmp/
 # runs in, and it records absolute local paths.  Unlike .mypy_cache/.pytest_cache
 # it does not write a self-ignoring .gitignore, so it has to be listed here.
 .claude-flow/
+.gstack/
+*.tsbuildinfo
