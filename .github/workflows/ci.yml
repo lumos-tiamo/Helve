@@ -60,6 +60,25 @@ jobs:
         working-directory: server
         run: uv run --extra dev pytest tests -q
 
+  evals:
+    name: eval harness
+    # The scenario cases need a provider and cost money, so CI runs the
+    # harness's own suite instead: it proves the measurement equipment works,
+    # which is the part that can be checked for free.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: evals/pyproject.toml
+      - name: Run harness tests
+        working-directory: evals
+        run: uv run --extra test pytest tests -q
+      - name: The shipped suite must load
+        working-directory: evals
+        run: uv run helve-eval --list
+
   shell:
     name: shell
     runs-on: ubuntu-latest

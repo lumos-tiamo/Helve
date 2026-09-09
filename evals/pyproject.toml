@@ -1,0 +1,29 @@
+[project]
+name = "helve-evals"
+version = "0.1.0"
+description = "Scenario evaluation harness for the Helve agent"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+    "helve-common",
+    "helve-engine",
+    "helve-server",
+]
+
+[tool.uv.sources]
+helve-common = { path = "../common", editable = true }
+helve-engine = { path = "../engine", editable = true }
+helve-server = { path = "../server", editable = true }
+
+[project.optional-dependencies]
+test = ["pytest>=8.0", "pytest-asyncio>=0.25"]
+
+[project.scripts]
+helve-eval = "helve_evals.cli:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["helve_evals*"]

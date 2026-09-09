@@ -1,0 +1,32 @@
+# Routing and skill selection.  A prompt that should reach the coding pipeline
+# and instead answers from the top of the model's head is a silent regression:
+# the answer looks fine, the gates never ran.
+id: bug-report-reaches-a-tool
+description: 报 bug 应当去看代码而不是凭空作答
+prompt: calc.py 里的 add 函数结果不对，先看看代码再说结论
+tags: [routing]
+given:
+  files:
+    calc.py: "def add(a, b):\n    return a - b\n"
+expect:
+  tools:
+    must_call: [read_file]
+budget:
+  max_tool_calls: 8
+  max_seconds: 150
+---
+id: fix-the-bug
+description: 定位并修复一个明确的缺陷
+prompt: calc.py 的 add 函数把加法写成了减法，修好它
+tags: [routing, write]
+given:
+  files:
+    calc.py: "def add(a, b):\n    return a - b\n"
+expect:
+  files:
+    calc.py:
+      contains: ["a + b"]
+      absent: ["a - b"]
+budget:
+  max_tool_calls: 10
+  max_seconds: 180
