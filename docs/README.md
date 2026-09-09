@@ -14,7 +14,7 @@ docs/
 ├── check-links.py               链接检查（改完文档跑一次）
 ├── guide/          01-02  上手：这是什么、怎么跑起来
 ├── architecture/   10-12  全貌：分层、一次请求的全链路、术语
-├── subsystems/     20-30  横切子系统：每个子系统怎么跑
+├── subsystems/     20-31  横切子系统：每个子系统怎么跑
 ├── layers/         40-44  代码分层：每一层解决什么问题
 ├── project/        50-52  项目治理：规范、路线图、外部对比
 └── adr/ analysis/ capabilities/ reference/ research/ superpowers/

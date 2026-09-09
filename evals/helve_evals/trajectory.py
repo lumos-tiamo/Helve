@@ -15,8 +15,12 @@ from typing import Any, Iterable
 @dataclass(frozen=True, slots=True)
 class ToolCall:
     name: str
+    # The provider's call id.  Results are paired on this, never on the name:
+    # a gated call emits an intermediate result that carries only the id, and
+    # matching on name would attach it to the wrong call — or to no call.
+    call_id: str = ""
     ok: bool | None = None
-    approved: bool | None = None
+    approval_requested: bool = False
 
 
 @dataclass(slots=True)
@@ -65,7 +69,12 @@ def build_trajectory(events: Iterable[tuple[str, dict[str, Any]]], seconds: floa
         payload = data or {}
 
         if event_type == "tool_call_start":
-            trajectory.tool_calls.append(ToolCall(name=str(payload.get("name", ""))))
+            trajectory.tool_calls.append(
+                ToolCall(
+                    name=str(payload.get("name", "")),
+                    call_id=str(payload.get("id", "")),
+                )
+            )
         elif event_type == "tool_call_result":
             _attach_result(trajectory, payload)
         elif event_type == "route_decided":
@@ -82,10 +91,11 @@ def build_trajectory(events: Iterable[tuple[str, dict[str, Any]]], seconds: floa
                 _first_str(payload, ("reason", "message", "detail")) or "blocked"
             )
         elif event_type == "awaiting_input":
-            # An approval request surfaces as the run pausing for the user.  The
-            # tool it belongs to is whichever call is currently open.
+            # A secondary signal only.  The engine marks tool approvals on the
+            # result (see _attach_result); awaiting_input covers the cases where
+            # a run pauses for the user without a tool result to hang it on.
             pending = trajectory.tool_calls[-1].name if trajectory.tool_calls else ""
-            if pending:
+            if pending and pending not in trajectory.approvals_requested:
                 trajectory.approvals_requested.append(pending)
         elif event_type == "token_usage":
             trajectory.input_tokens += _int(payload, ("input_tokens", "prompt_tokens", "input"))
@@ -102,21 +112,58 @@ def build_trajectory(events: Iterable[tuple[str, dict[str, Any]]], seconds: floa
 
 
 def _attach_result(trajectory: Trajectory, payload: dict[str, Any]) -> None:
-    """Fill in the outcome of the most recent call of the named tool."""
-    name = str(payload.get("name", ""))
+    """Apply one result to the call it belongs to.
+
+    One tool call can emit several results, and only the last is the outcome:
+
+    * ``preflight: true``  — the fact gate challenged the call
+    * ``approval_required: true`` — it is waiting for a human
+    * otherwise            — the call actually finished
+
+    Treating the first of those as the outcome is how a gated write gets
+    recorded as "ran without pausing", which is exactly backwards.
+    """
+    index = _find_call(trajectory, payload)
+    if index is None:
+        return
+    call = trajectory.tool_calls[index]
+
+    if payload.get("approval_required"):
+        trajectory.tool_calls[index] = ToolCall(
+            name=call.name, call_id=call.call_id, ok=call.ok, approval_requested=True
+        )
+        if call.name and call.name not in trajectory.approvals_requested:
+            trajectory.approvals_requested.append(call.name)
+        return
+
+    if payload.get("preflight"):
+        # A gate challenge is not an outcome; the call is still open.
+        return
+
     ok = payload.get("ok")
     if ok is None:
         ok = not payload.get("error")
-    approved = payload.get("approved")
+    trajectory.tool_calls[index] = ToolCall(
+        name=call.name,
+        call_id=call.call_id,
+        ok=bool(ok),
+        approval_requested=call.approval_requested,
+    )
+
+
+def _find_call(trajectory: Trajectory, payload: dict[str, Any]) -> int | None:
+    """Locate the call a result belongs to: by id, then by name, then the last open one."""
+    call_id = str(payload.get("id", ""))
+    if call_id:
+        for index in range(len(trajectory.tool_calls) - 1, -1, -1):
+            if trajectory.tool_calls[index].call_id == call_id:
+                return index
+    name = str(payload.get("name", ""))
     for index in range(len(trajectory.tool_calls) - 1, -1, -1):
         call = trajectory.tool_calls[index]
-        if (not name or call.name == name) and call.ok is None:
-            trajectory.tool_calls[index] = ToolCall(
-                name=call.name,
-                ok=bool(ok),
-                approved=None if approved is None else bool(approved),
-            )
-            return
+        if call.ok is None and (not name or call.name == name):
+            return index
+    return None
 
 
 def _first_str(payload: dict[str, Any], keys: tuple[str, ...]) -> str | None:

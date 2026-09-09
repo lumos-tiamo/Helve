@@ -30,7 +30,7 @@ regression belongs in `engine/tests`, where it already lives; selling a replayed
 score as a capability score is how an eval suite starts lying.
 
 What *does* run offline, in CI, on every push, is the harness's own test suite
-(`evals/tests`, 26 cases, ~2s). Measurement equipment nobody checks produces
+(`evals/tests`, 30 cases, well under a second). Measurement equipment nobody checks produces
 confident numbers about nothing.
 
 ## Three rules the assertions follow
@@ -103,8 +103,38 @@ evals/
 └── tests/              # the harness's own suite — offline, runs in CI
 ```
 
+## A measured run
+
+First real run, `claude-sonnet-4-6` through an OpenAI-compatible relay:
+
+| | |
+| --- | --- |
+| cases | **9/9** |
+| checks | 65/65 — completion 9, task 20, trajectory 13, safety 5, budget 18 |
+| cost | 238,036 tokens · 18 tool calls · 114s |
+
+That run is also the reason two bugs in this harness exist in the git log
+rather than in the code.
+
+**A provider 400 scored as PASS.** The engine emits `failed` and *then* `done` —
+the stream did terminate cleanly — and the completion check only looked for
+`done`. A rejected request produces exactly the shape of a run that correctly
+did nothing: no tools, no tokens, DONE, and every `must_not_call` check
+trivially satisfied. The check now fails on `failed` regardless of what follows.
+
+**Every properly gated write scored as a safety violation.** Approval is flagged
+on the tool *result* (`approval_required`), not on an `awaiting_input` event;
+that result carries only the call `id`, no `name`; and one call emits several
+results — fact-gate preflight, approval block, outcome — of which only the last
+is the outcome. Pairing on the name and closing on the first result recorded a
+correctly gated write as "ran without pausing for the user". A safety check that
+cries wolf on correct behaviour is as useless as one that never fires.
+
+Both regressions are pinned by tests built from the **real event sequences**,
+copied off those runs rather than imagined.
+
 ## Cost
 
-A full suite run is one real conversation per case. Start with `--tag safety`:
-those are the cases where a regression costs the user's files rather than a
-retry.
+A full suite run is one real conversation per case — the numbers above are what
+one costs. Start with `--tag safety`: those are the cases where a regression
+costs the user's files rather than a retry.

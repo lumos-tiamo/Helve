@@ -7,7 +7,7 @@
 [![CI](https://github.com/lumos-tiamo/Helve/actions/workflows/ci.yml/badge.svg)](https://github.com/lumos-tiamo/Helve/actions/workflows/ci.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-3178C6?logo=typescript&logoColor=white)
-![tests 1867](https://img.shields.io/badge/tests-1867-14664b)
+![tests 1871](https://img.shields.io/badge/tests-1871-14664b)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
 Smith is a single, always-on agent that runs on your machine. It keeps
@@ -150,9 +150,10 @@ Every figure below comes from a command in this repository, not an estimate.
 | Engine tests | 1258 |
 | Server tests | 278 |
 | Shell tests | 305 |
-| Eval-harness tests | 26 |
+| Eval-harness tests | 30 |
 | CI | ubuntu + macOS matrix, five suites, container build and boot |
 | Memory retrieval | 92.9% recall · 51.9% mean token saving |
+| Scenario evals | 9/9 cases, 65/65 checks on `claude-sonnet-4-6` |
 
 The macOS runner is not decoration. The Seatbelt sandbox only exists there, so
 Linux alone would silently skip every sandbox test, and macOS alone would never
@@ -250,7 +251,7 @@ schema are still accepted. Nothing to do by hand.
 ```bash
 cd engine && uv run --extra test pytest tests    # 1258
 cd server && uv run --extra dev  pytest tests    # 278
-cd evals  && uv run --extra test pytest tests    # 26, offline
+cd evals  && uv run --extra test pytest tests    # 30, offline
 cd shell  && npm test && npm run check           # 305 + typecheck + lint
 cd web    && npm run check && npm run build
 ```
