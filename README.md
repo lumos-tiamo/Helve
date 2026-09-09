@@ -7,7 +7,7 @@
 [![CI](https://github.com/lumos-tiamo/Helve/actions/workflows/ci.yml/badge.svg)](https://github.com/lumos-tiamo/Helve/actions/workflows/ci.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-3178C6?logo=typescript&logoColor=white)
-![tests 1871](https://img.shields.io/badge/tests-1871-14664b)
+![tests 1873](https://img.shields.io/badge/tests-1873-14664b)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
 Smith is a single, always-on agent that runs on your machine. It keeps
@@ -147,7 +147,7 @@ Every figure below comes from a command in this repository, not an estimate.
 
 | | |
 |---|---|
-| Engine tests | 1258 |
+| Engine tests | 1260 |
 | Server tests | 278 |
 | Shell tests | 305 |
 | Eval-harness tests | 30 |
@@ -249,7 +249,7 @@ schema are still accepted. Nothing to do by hand.
 ## Development
 
 ```bash
-cd engine && uv run --extra test pytest tests    # 1258
+cd engine && uv run --extra test pytest tests    # 1260
 cd server && uv run --extra dev  pytest tests    # 278
 cd evals  && uv run --extra test pytest tests    # 30, offline
 cd shell  && npm test && npm run check           # 305 + typecheck + lint
