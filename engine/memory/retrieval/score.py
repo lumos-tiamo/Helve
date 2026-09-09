@@ -59,6 +59,14 @@ def tokenize(text: str) -> list[str]:
 
     Real segmentation would beat this.  It would also mean shipping a dictionary
     into a local-first tool for a gain this already captures most of.
+
+    A CJK stopword list was tried and **rejected on measurement**, so nobody has
+    to try it twice.  On the labelled set: dropping the function *bigrams*
+    (什么, 怎么, 这个 …) changed nothing at all — MRR 0.846 either way; dropping
+    the high-frequency single characters (的, 了, 是 …) made it *worse*, MRR
+    0.827 and top-3 78.6% against 85.7%.  Those characters do carry signal once
+    they are part of a bigram, and a list short enough to be safe is short
+    enough to be pointless.
     """
     tokens = _TOKEN.findall(text.lower())
     bigrams = [

@@ -208,3 +208,28 @@ def test_a_term_in_every_document_cannot_subtract_from_a_match():
 
 def test_an_empty_query_scores_nothing_rather_than_erroring():
     assert BM25(["a b c"]).score("") == [0.0]
+
+
+def test_the_retrieval_decision_reaches_the_prompt_manifest():
+    """Producer and consumer both existed; nothing joined them.
+
+    ``Retrieval.to_trace_data`` was written, and the console panel that renders
+    it was written, and no code path put the first into the trace the second
+    reads.  A seeded fixture supplied the field by hand, so the panel looked
+    correct in development and said "no retrieval decision recorded" on every
+    real run.  Caught by opening the console on a live run, not by any test.
+    """
+    from engine.context.assembler import PromptAssembler
+
+    assembler = PromptAssembler()
+    # Nothing assembled yet: the attribute exists and is honest about it.
+    assert assembler.last_retrieval is None
+
+    # After a build the decision is available for the manifest to carry.
+    document = _document(30)
+    assembler.last_retrieval = retrieve_memory(document, "sqlite wal 的坑")
+    payload = assembler.last_retrieval.to_trace_data()
+
+    assert payload["chunks_kept"] < payload["chunks_total"]
+    assert payload["strategy"] in {"lexical", "hybrid", "whole"}
+    assert "saved_ratio" in payload

@@ -165,9 +165,11 @@ export function promptComposition(events: TraceEvent[]): PromptLayerCost[] {
   return [];
 }
 
-/** Whatever the run recorded about memory retrieval, for the detail panel. */
+/** The run's memory-retrieval decision, carried on the prompt manifest. */
 export function retrievalTrace(events: TraceEvent[]): Record<string, unknown> | null {
   for (const event of events) {
+    // The manifest is the primary home; the loose key is accepted too so a
+    // trace recorded by the demo seeder still renders.
     const retrieval = event.data.memory_retrieval ?? event.data.retrieval;
     if (retrieval && typeof retrieval === "object") return retrieval as Record<string, unknown>;
   }

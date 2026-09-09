@@ -401,7 +401,8 @@ async def prepare_runtime(
     eval_guidance = (
         EVAL_SENSITIVE_GUIDANCE if detect_eval_sensitive(request.message) else ""
     )
-    prompt_assembly = PromptAssembler().assemble_detailed(
+    assembler = PromptAssembler()
+    prompt_assembly = assembler.assemble_detailed(
         runtime.profile_dir,
         services.tool_registry,
         services.skill_registry,
@@ -485,9 +486,18 @@ async def prepare_runtime(
 
     chain = _resolve_pipeline(route, runtime)
 
+    # The retrieval decision rides in the prompt manifest because that is what
+    # the manifest is: the record of how this turn's prompt was assembled.  It
+    # was already produced and already rendered by the console -- nothing wired
+    # the two together, so the panel read "no retrieval decision recorded" on
+    # every real run while a seeded fixture made it look fine.
+    manifest_data = prompt_assembly.manifest.to_trace_data()
+    if assembler.last_retrieval is not None:
+        manifest_data["memory_retrieval"] = assembler.last_retrieval.to_trace_data()
+
     return AgentSetup(
         system_prompt=prompt_assembly.text,
-        prompt_manifest=prompt_assembly.manifest.to_trace_data(),
+        prompt_manifest=manifest_data,
         prefix_cache_key=prompt_assembly.prefix_cache_key,
         identity=identity,
         route=route,
