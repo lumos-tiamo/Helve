@@ -86,6 +86,7 @@ graph LR
 | [28 · 身份与路由](subsystems/28-身份与路由.md) | 声明式身份档案、纯词法路由、`RouteDecision` | `engine/identity/`、`engine/execution/routing/` |
 | [29 · Skill 技能系统](subsystems/29-Skill技能系统.md) | `SKILL.md` 怎么被发现、启用、执行并移交上下文 | `engine/skill/` |
 | [30 · Sandbox 执行环境](subsystems/30-Sandbox执行环境.md) | 子进程管理、输出上限、取消、macOS Seatbelt 约束 | `engine/sandbox/` |
+| [31 · Helve 作为 MCP Server](subsystems/31-MCP-Server.md) | 对外的 JSON-RPC 端点、暴露面的边界及其理由 | `server/app/mcp/` |
 
 ### layers —— 每层做什么
 

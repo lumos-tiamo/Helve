@@ -22,6 +22,7 @@ from .infrastructure.database import get_app_db
 from .routers import (
     agent,
     config,
+    mcp,
 )
 from .services.auto_task_service import cancel_background_runs
 from .services.engine_runtime import close_shared_llm_clients, load_runtime_identity_catalog
@@ -162,6 +163,7 @@ app.add_middleware(
 
 app.include_router(agent.router, dependencies=[Depends(require_auth)])
 app.include_router(config.router, dependencies=[Depends(require_auth)])
+app.include_router(mcp.router, dependencies=[Depends(require_auth)])
 
 _CONSOLE_DIST = Path(__file__).resolve().parents[2] / "web" / "dist"
 
