@@ -293,9 +293,8 @@ has exactly one authoritative document, all written against the source.
 | [`docs/subsystems/31-MCP-Server.md`](docs/subsystems/31-MCP-Server.md) | The outward MCP endpoint and the boundary on what it exposes |
 | [`brand/README.md`](brand/README.md) | The mark, and why it is shaped that way |
 
-Superseded drafts live in [`docs/archive/`](docs/archive) and are **not current
-fact** — each carries a banner naming the document that replaced it. When
-documentation and code disagree, the code wins.
+Superseded drafts are not carried in the working tree — git history holds them,
+which is what they were for. When documentation and code disagree, the code wins.
 
 ---
 
