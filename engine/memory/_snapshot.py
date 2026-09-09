@@ -43,10 +43,17 @@ _REF_PATTERN = re.compile(r"\A[0-9a-fA-F]{7,40}\Z")
 # A fresh machine may have no committer identity, and a configured GPG key would
 # block on a passphrase prompt.  Both are supplied per invocation so the
 # snapshot never depends on -- or mutates -- the user's global git config.
+# ``gc.auto`` belongs here for the same reason: left to the ambient config,
+# `git commit` can decide to repack mid-turn.  That puts an unbounded pause on
+# the per-turn write path and takes the timing of compaction away from
+# ``compact_snapshots()``, which exists precisely to run it on Dream's
+# low-frequency pass instead.  CI caught this: the same suite passed on one
+# runner and failed on another purely on the runner's git configuration.
 _RUN_CONFIG: tuple[str, ...] = (
     "-c", "user.name=Helve",
     "-c", "user.email=smith@helve.local",
     "-c", "commit.gpgsign=false",
+    "-c", "gc.auto=0",
 )
 
 

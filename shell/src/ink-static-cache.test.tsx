@@ -77,7 +77,24 @@ function Harness({ staticKey, tall }: { staticKey: number; tall: boolean }) {
   );
 }
 
-const tick = (ms = 70) => new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * Ink's render is throttled, so a fixed delay is a bet on how loaded the
+ * machine is -- one that a CI runner loses.  Every step below waits for the
+ * write it expects instead, which is both faster locally and stable on a
+ * runner that pauses for half a second in the middle of the test.
+ */
+async function waitFor(label: string, predicate: () => boolean, timeoutMs = 5000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!predicate()) {
+    if (Date.now() > deadline) throw new Error(`timed out after ${timeoutMs}ms waiting for ${label}`);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
+const historyWrites = (writes: string[]) => writes.filter((write) => write.includes("HISTORY_A")).length;
+
+const reprints = (writes: string[]) =>
+  writes.filter((write) => write.includes(CLEAR_TERMINAL) && write.includes("HISTORY_A"));
 
 /** Copies of a history entry contained in each full-history reprint write. */
 async function copiesPerReprint(): Promise<number[]> {
@@ -88,23 +105,22 @@ async function copiesPerReprint(): Promise<number[]> {
     exitOnCtrlC: false,
     patchConsole: false,
   });
-  await tick();
+  await waitFor("the first static write", () => historyWrites(stdout.writes) > 0);
 
   // The epoch bump: <Static> remounts under a new key, re-emitting every item.
+  const beforeBump = historyWrites(stdout.writes);
   instance.rerender(<Harness staticKey={1} tall={false} />);
-  await tick();
+  await waitFor("the remounted static write", () => historyWrites(stdout.writes) > beforeBump);
 
   // Fill the terminal so ink reprints its accumulated static output.
   instance.rerender(<Harness staticKey={1} tall={true} />);
-  await tick();
   instance.rerender(<Harness staticKey={1} tall={true} />);
-  await tick();
+  await waitFor("a full-history reprint", () => reprints(stdout.writes).length > 0);
+
   instance.unmount();
   instance.cleanup();
 
-  return stdout.writes
-    .filter((write) => write.includes(CLEAR_TERMINAL) && write.includes("HISTORY_A"))
-    .map((write) => (write.match(/HISTORY_A/g) ?? []).length);
+  return reprints(stdout.writes).map((write) => (write.match(/HISTORY_A/g) ?? []).length);
 }
 
 test("ink resets its static cache when Static remounts, so history prints once", async () => {

@@ -83,3 +83,35 @@ jobs:
         run: |
           npm run check
           npm test
+
+  image:
+    name: docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: helve-server:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # A build that succeeds but cannot serve is not a working image: this
+      # boots it with no LLM configured and asks for the OpenAPI document,
+      # which exercises app startup, engine import and the agents/ content
+      # tree without needing a provider key.
+      - name: Boot it and hit the API
+        run: |
+          docker run -d --name helve-ci -p 8000:8000 helve-server:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/openapi.json -o /dev/null; then
+              echo "server answered after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "server never answered"; docker logs helve-ci; exit 1
+      - name: Container logs
+        if: always()
+        run: docker logs helve-ci || true

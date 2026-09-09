@@ -301,13 +301,14 @@ def test_reclaimed_evidence_is_recoverable(tmp_path):
 
 
 def test_snapshot_history_is_repacked_instead_of_growing_forever(tmp_path):
-    """Every writer here only commits, and `git commit` triggers no auto-gc, so
-    each snapshot's *full* copy of recent.jsonl stayed a delta-free loose blob
-    for the life of the install -- growth with no ceiling and no reclaim."""
+    """Every writer here only commits, and commits pin ``gc.auto=0``, so each
+    snapshot's *full* copy of recent.jsonl stays a delta-free loose blob for the
+    life of the install -- growth with no ceiling and no reclaim until
+    ``compact_snapshots`` runs."""
     root = _agent_root(tmp_path)
     _snapshot_past_the_gc_limit(root)
 
-    assert not _packs(root), "committing must not be assumed to pack anything"
+    assert not _packs(root), "committing must not pack: gc.auto is pinned off"
     before = _loose_objects(root)
 
     assert compact_snapshots(root) is True
