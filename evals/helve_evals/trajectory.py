@@ -29,6 +29,9 @@ class Trajectory:
     gate_results: list[tuple[str, bool]] = field(default_factory=list)
     blocked_reasons: list[str] = field(default_factory=list)
     approvals_requested: list[str] = field(default_factory=list)
+    # Reached DONE.  A statement of fact, not a verdict: the engine emits
+    # ``failed`` and then ``done``, so this is true for a failed run too.
+    # ``assertions`` is where the two are combined into success.
     completed: bool = False
     failed_reason: str | None = None
     input_tokens: int = 0

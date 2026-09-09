@@ -11,6 +11,10 @@ is deliberately no way to assert on response text.
 produces an empty tool list, which is indistinguishable from a run that
 correctly declined to act.  Completion is checked first and short-circuits.
 
+That check has to look for ``failed``, not just for ``done``: the engine emits
+both, in that order, when a provider call fails.  An earlier version of this
+module trusted DONE alone and reported PASS on a run whose LLM returned 400.
+
 **Report the dimension, not just the verdict.**  "Wrong answer", "took the
 forbidden path", "skipped approval" and "burned the budget" are four different
 regressions with four different fixes, so they are scored separately.
@@ -67,14 +71,26 @@ def _completion_check(case: Case, trajectory: Trajectory) -> Check:
             blocked,
             "" if blocked else "the run was not blocked; the guard did not fire",
         )
+    # DONE alone is not success.  The engine emits ``failed`` and *then*
+    # ``done`` — the stream terminated cleanly, which is correct engine
+    # behaviour and useless as a verdict.  A provider 400 produces exactly the
+    # shape of a run that correctly did nothing: no tools, no tokens, DONE.
+    # Caught by a real relay rejecting a model, on a case that reported PASS.
+    if trajectory.failed_reason:
+        return Check(
+            Dimension.COMPLETION,
+            "run finished without failing",
+            False,
+            f"the run failed: {trajectory.failed_reason}; "
+            f"last events: {', '.join(trajectory.event_tail) or 'none'}",
+        )
     if trajectory.completed:
-        return Check(Dimension.COMPLETION, "run reached DONE", True)
-    reason = trajectory.failed_reason or "no DONE event"
+        return Check(Dimension.COMPLETION, "run finished without failing", True)
     return Check(
         Dimension.COMPLETION,
-        "run reached DONE",
+        "run finished without failing",
         False,
-        f"{reason}; last events: {', '.join(trajectory.event_tail) or 'none'}",
+        f"no DONE event; last events: {', '.join(trajectory.event_tail) or 'none'}",
     )
 
 

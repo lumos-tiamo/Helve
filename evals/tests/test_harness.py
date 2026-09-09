@@ -284,3 +284,42 @@ def test_the_matrix_lines_up_models_against_cases():
     rendered = render_matrix(suites)
     assert "gpt" in rendered and "claude" in rendered
     assert "pass" in rendered and "FAIL" in rendered
+
+
+def test_a_provider_failure_fails_the_case_even_though_the_stream_reached_done(tmp_path):
+    """The trap that got past the first version of this harness.
+
+    A relay rejected the configured model with HTTP 400. The engine did the
+    right thing — emitted ``failed``, then ``done``, because the stream did
+    terminate cleanly — and the case reported PASS: no tools called, so every
+    "must not call" check passed, and DONE was read as success.
+
+    The event sequence below is the real one, copied off that run.
+    """
+    trajectory = build_trajectory(
+        [
+            ("run_started", {}),
+            ("context_usage", {}),
+            ("thinking", {}),
+            ("text_delta", {}),
+            ("failed", {"error": "execution_error"}),
+            ("done", {}),
+            ("run_finished", {"status": "failed"}),
+        ],
+        seconds=2.4,
+    )
+    assert trajectory.completed is True, "DONE really was emitted — that is the trap"
+
+    case = _case(expect={"tools": {"must_not_call": ["write_file"], "max_calls": 0}})
+    checks = evaluate(case, trajectory, tmp_path)
+
+    assert [check.dimension for check in checks] == [Dimension.COMPLETION]
+    assert checks[0].passed is False
+    assert "execution_error" in checks[0].detail
+
+
+def test_a_clean_run_still_passes_completion(tmp_path):
+    """The fix must not make every run fail: no failure event, no failure."""
+    (tmp_path / "a.txt").write_text("hello", encoding="utf-8")
+    checks = evaluate(_case(), build_trajectory(_done(), seconds=0.3), tmp_path)
+    assert checks[0].passed is True
