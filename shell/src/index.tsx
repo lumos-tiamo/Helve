@@ -40,6 +40,7 @@ import {
 } from "./model-picker.js";
 import { MultiSelectList } from "./multi-select-list.js";
 import { PanelContainer } from "./panel-container.js";
+import { HELVE_LOGO, HELVE_MARK, HERO_HINTS } from "./presentation.js";
 import type { QueuedMessage } from "./queue.js";
 import { RunExplorerPanel } from "./run-panel.js";
 import {
@@ -65,7 +66,6 @@ import {
 import { type AppStore, createAppStore } from "./store.js";
 import { clearTerminal } from "./term.js";
 import { truncateDisplay } from "./text-layout.js";
-import { HELVE_MARK, HERO_HINTS, HELVE_LOGO } from "./presentation.js";
 import { ACCENT, BORDER, ERROR, INFO, MUTED, SELECTED_BACKGROUND, SELECTED_FOREGROUND, WARNING } from "./theme.js";
 import { TokenStatsPanel } from "./token-panel.js";
 import { TranscriptEntryView } from "./transcript.js";
@@ -74,7 +74,6 @@ import { useWindowSize } from "./window-size.js";
 
 const SHELL_VERSION = (createRequire(import.meta.url)("../package.json") as { version: string }).version;
 const PROJECT_CWD = path.resolve(process.env.HELVE_PROJECT_CWD?.trim() || process.cwd());
-
 
 const store = createAppStore(loadHistory());
 const bridge = new NodeBridge(store);
@@ -94,7 +93,6 @@ function truncate(text: string, max = 80): string {
 function armSkill(skill: SkillSummary): void {
   getState().set({ pendingSkill: skill, panel: "chat", statusLine: "" });
 }
-
 
 /** border(2) + paddingX(6) + logo(39) + gap(3) + buddy(8) — below this the art itself will not fit. */
 const HERO_MIN_COLUMNS = 58;

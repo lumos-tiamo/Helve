@@ -1,0 +1,19 @@
+services:
+  helve:
+    build: .
+    image: helve-server
+    ports:
+      - "127.0.0.1:8000:8000"   # loopback only: Helve is local-first by design
+    environment:
+      HELVE_LLM_PROVIDER: ${HELVE_LLM_PROVIDER:-openai}
+      HELVE_LLM_API_KEY: ${HELVE_LLM_API_KEY:?set HELVE_LLM_API_KEY in .env or the environment}
+      HELVE_LLM_BASE_URL: ${HELVE_LLM_BASE_URL:-https://api.openai.com/v1}
+      HELVE_LLM_MODEL: ${HELVE_LLM_MODEL:?set HELVE_LLM_MODEL}
+    volumes:
+      # The data root: sessions, memory, the audit chain.  Named so it survives
+      # `docker compose down` — losing it forks nothing, it just loses history.
+      - helve-data:/home/helve/.helve
+      # The workspace the agent is allowed to touch.
+      - ${HELVE_WORKSPACE:-./workspace}:/workspace
+volumes:
+  helve-data:

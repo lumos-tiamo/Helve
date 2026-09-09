@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Several suites call the real localAuthHeaders, which reads this file.
+  # Created per job rather than mocked, so the tests exercise the real path.
+  HELVE_AUTH_TOKEN: ci-token
+
+jobs:
+  engine:
+    name: engine (${{ matrix.os }})
+    # Both platforms on purpose.  The Seatbelt sandbox only exists on macOS, so
+    # Linux alone would silently skip every sandbox test; macOS alone would
+    # never catch a Seatbelt test that is missing its platform marker and so
+    # fails instead of skipping elsewhere.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: engine/uv.lock
+      - name: Seed the local auth token
+        run: |
+          mkdir -p ~/.helve
+          printf '%s' "$HELVE_AUTH_TOKEN" > ~/.helve/auth_token
+          chmod 700 ~/.helve && chmod 600 ~/.helve/auth_token
+      - name: Run engine tests
+        working-directory: engine
+        run: uv run --extra test pytest tests -q
+
+  server:
+    name: server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: server/uv.lock
+      - name: Seed the local auth token
+        run: |
+          mkdir -p ~/.helve
+          printf '%s' "$HELVE_AUTH_TOKEN" > ~/.helve/auth_token
+          chmod 700 ~/.helve && chmod 600 ~/.helve/auth_token
+      - name: Run server tests
+        working-directory: server
+        run: uv run --extra dev pytest tests -q
+
+  shell:
+    name: shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: shell/package-lock.json
+      - name: Install
+        working-directory: shell
+        run: npm ci
+      - name: Seed the local auth token
+        run: |
+          mkdir -p ~/.helve
+          printf '%s' "$HELVE_AUTH_TOKEN" > ~/.helve/auth_token
+          chmod 700 ~/.helve && chmod 600 ~/.helve/auth_token
+      - name: Typecheck, lint and test
+        working-directory: shell
+        run: |
+          npm run check
+          npm test

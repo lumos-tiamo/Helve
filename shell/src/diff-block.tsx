@@ -14,7 +14,6 @@ import {
 import { displayWidth, wrapDisplayText } from "./text-layout.js";
 import { BORDER, MUTED } from "./theme.js";
 
-
 export type RenderedDiffLine = {
   kind: DiffLineKind;
   prefix: string;
@@ -23,7 +22,6 @@ export type RenderedDiffLine = {
   continuation: boolean;
   changedRanges?: ChangedRange[];
 };
-
 
 function marker(kind: DiffLineKind): string {
   if (kind === "deletion") return "-";
@@ -80,7 +78,6 @@ export function renderDiffLines(diff: UnifiedDiff, width: number): RenderedDiffL
     });
   });
 }
-
 
 function highlightedContent(
   content: string,

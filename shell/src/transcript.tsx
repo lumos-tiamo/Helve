@@ -11,11 +11,11 @@ import { splitMarkdownLayoutBlocks } from "./markdown-layout.js";
 import { type MarkdownSegment, splitMarkdownBlocks } from "./markdown-segments.js";
 import { MarkdownTableBlock } from "./markdown-table.js";
 import { stripEmojiIcons } from "./output.js";
+import { TOOL_PRESENTATION } from "./presentation.js";
 import { skillPresentation } from "./skill-presentation.js";
 import { SmithUiBlock as SmithUiView } from "./smith-ui.js";
 import { splitStreamingMarkdown } from "./streaming-markdown.js";
 import { truncateDisplay } from "./text-layout.js";
-import { TOOL_PRESENTATION } from "./presentation.js";
 import { ACCENT, ASSISTANT, BORDER, ERROR, INFO, MUTED, SKILL, SUCCESS, WARNING } from "./theme.js";
 import type {
   SkillBlock,

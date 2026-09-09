@@ -315,9 +315,8 @@ function memoryParts(maintenance: MemoryMaintenance | null): HudPart[] {
     const part: HudPart = [{ text: `☾ ${label}`, color: ERROR }];
     const error = maintenance?.last_error?.trim();
     if (error) {
-      const shown = error.length > MEMORY_ERROR_DISPLAY_CHARS
-        ? `${error.slice(0, MEMORY_ERROR_DISPLAY_CHARS)}…`
-        : error;
+      const shown =
+        error.length > MEMORY_ERROR_DISPLAY_CHARS ? `${error.slice(0, MEMORY_ERROR_DISPLAY_CHARS)}…` : error;
       part.push({ text: ` ${shown}`, color: MUTED });
     }
     return [part];

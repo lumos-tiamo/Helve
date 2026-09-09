@@ -211,7 +211,10 @@ export function diffColor(kind: DiffLineKind): string {
   return MUTED;
 }
 
-export function wordSegments(text: string, ranges: ChangedRange[] | undefined): Array<{ text: string; changed: boolean }> {
+export function wordSegments(
+  text: string,
+  ranges: ChangedRange[] | undefined,
+): Array<{ text: string; changed: boolean }> {
   if (!ranges?.length) return [{ text, changed: false }];
   const range = ranges[0];
   if (!range) return [{ text, changed: false }];
