@@ -170,9 +170,28 @@ def test_the_decision_is_traceable():
 
 # ── scoring ────────────────────────────────────────────────────────────────
 
-def test_chinese_is_tokenized_per_ideograph_so_partial_overlap_scores():
-    """A whitespace tokenizer makes BM25 an exact-match test on Chinese."""
-    assert tokenize("sqlite 的坑") == ["sqlite", "的", "坑"]
+def test_chinese_yields_both_characters_and_bigrams():
+    """A whitespace tokenizer makes BM25 an exact-match test on Chinese.
+
+    Characters alone overcorrect: in a small corpus the function characters of
+    为什么 look statistically rare, so "why" questions score against any bullet
+    containing 什 or 么.  The bigram is the token that carries meaning.
+    """
+    assert tokenize("sqlite 的坑") == ["sqlite", "的", "坑", "的坑"]
+    # No bigram is formed across a non-CJK boundary.
+    assert "sqlite的" not in tokenize("sqlite 的坑")
+
+
+def test_a_bigram_outranks_a_coincidental_character_match():
+    """The live failure that motivated bigrams, reduced to two documents."""
+    corpus = [
+        "决定 不设 向量 库：索引落在既有 SQLite 上",
+        "崩掉的 run 工具序列同样为空，会被当成正确地什么都没做",
+    ]
+    scores = BM25(corpus).score("为什么不用向量数据库")
+    assert scores[0] > scores[1], (
+        "the bullet that is actually about 向量 must beat one that merely shares 什/么"
+    )
 
 
 def test_bm25_ranks_the_matching_document_first():
