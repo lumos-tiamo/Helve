@@ -104,6 +104,12 @@ async function copiesPerReprint(): Promise<number[]> {
     stdin: fakeStdin(),
     exitOnCtrlC: false,
     patchConsole: false,
+    // Ink turns off its clear-and-reprint rendering when it detects CI
+    // (ink.js: `interactive ?? (!isInCi && stdout.isTTY)`), and the reprint is
+    // the whole subject of this test — without this the assertion cannot fire
+    // on a runner no matter how long it waits.  Asking for the interactive
+    // path explicitly is what makes the guarantee testable everywhere.
+    interactive: true,
   });
   await waitFor("the first static write", () => historyWrites(stdout.writes) > 0);
 
