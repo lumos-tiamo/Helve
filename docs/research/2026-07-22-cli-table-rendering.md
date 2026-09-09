@@ -1,7 +1,7 @@
 # CLI Markdown table rendering: Codex CLI and CodeBuddy Code
 
 > Scope: primary implementation sources only. This is an implementation note for
-> the Shell transcript, not a claim that Agent-Smith already behaves this way.
+> the Shell transcript, not a claim that Helve already behaves this way.
 > The question is specifically whether a terminal can preserve **all table
 > content** at a narrow width without silently truncating cells.
 
@@ -67,7 +67,7 @@ It contains no source map, so original TypeScript file paths and line numbers
 cannot be honestly attributed to this package version. The public repository's
 latest visible commit must not be treated as the source commit for 2.125.0.
 
-## Implication for Agent-Smith Shell
+## Implication for Helve Shell
 
 The earlier “replace a narrow table with a card” direction has the right
 content-safety property, but the desired presentation should be named and
@@ -87,9 +87,9 @@ This preserves every value while acknowledging the terminal's real width
 constraint. It is also a closer behavioural match to both CLI references than
 either unbounded one-line grids or default library truncation.
 
-## Agent-Smith decision and implemented boundary
+## Helve decision and implemented boundary
 
-Agent-Smith deliberately takes a narrower product decision than either
+Helve deliberately takes a narrower product decision than either
 reference: **do not transpose a Markdown table into cards or key/value records**.
 The Shell keeps a Unicode grid, reserves transcript indentation before it
 allocates columns, and hard-wraps every cell by terminal display width. This is

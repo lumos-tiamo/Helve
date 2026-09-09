@@ -1,4 +1,4 @@
-"""Keep the suite out of the developer's real ``~/.agent-smith`` install.
+"""Keep the suite out of the developer's real ``~/.helve`` install.
 
 ``AuditLog()`` falls back to ``DATA_DIR`` when no path is given, so every
 ``ToolGuard`` built without an explicit log appends to the production,
@@ -23,7 +23,7 @@ from common.paths import PRIVATE_DIR_MODE, AppPaths
 def isolate_runtime_data_dir(tmp_path):
     """Point the runtime data root at a per-test temporary directory."""
     project_root = AppPaths.defaults().project_root
-    data_dir = tmp_path / "agent-smith"
+    data_dir = tmp_path / "helve"
     data_dir.mkdir(mode=PRIVATE_DIR_MODE)
     reset_paths(AppPaths(data_dir=data_dir, project_root=project_root))
     try:

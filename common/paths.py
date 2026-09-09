@@ -9,14 +9,17 @@ import sysconfig
 from dataclasses import dataclass
 from pathlib import Path
 
-PROJECT_ROOT_ENV = "AGENT_SMITH_PROJECT_ROOT"
+PROJECT_ROOT_ENV = "HELVE_PROJECT_ROOT"
+LEGACY_PROJECT_ROOT_ENV = "AGENT_SMITH_PROJECT_ROOT"
+DATA_DIR_NAME = ".helve"
+LEGACY_DATA_DIR_NAME = ".agent-smith"
 PRIVATE_DIR_MODE = 0o700
 PRIVATE_FILE_MODE = 0o600
 
 logger = logging.getLogger(__name__)
 
 
-def _is_agent_smith_root(project_root: Path) -> bool:
+def _is_helve_root(project_root: Path) -> bool:
     agents_dir = project_root / "agents"
     return (
         (agents_dir / "smith" / "config.yaml").is_file()
@@ -36,34 +39,36 @@ def _ensure_real_path(path: Path, *, label: str = "path") -> None:
 
 
 def _default_project_root() -> Path:
-    configured_root = os.environ.get(PROJECT_ROOT_ENV)
+    configured_root = os.environ.get(PROJECT_ROOT_ENV) or os.environ.get(
+        LEGACY_PROJECT_ROOT_ENV
+    )
     if configured_root:
         project_root = Path(configured_root).expanduser().resolve()
-        if not _is_agent_smith_root(project_root):
+        if not _is_helve_root(project_root):
             raise RuntimeError(
-                f"{PROJECT_ROOT_ENV} must point to an Agent-Smith root with runtime assets"
+                f"{PROJECT_ROOT_ENV} must point to a Helve root with runtime assets"
             )
         return project_root
 
     source_root = Path(__file__).resolve().parent.parent
-    if _is_agent_smith_root(source_root):
+    if _is_helve_root(source_root):
         return source_root
 
-    # Stricter validation: check for Agent-Smith signature files
+    # Stricter validation: check for Helve signature files
     # to avoid mistaking another project's agents/ directory
     working_dir = Path.cwd().resolve()
     for candidate in (working_dir, *working_dir.parents):
         if not (candidate / "agents").is_dir():
             continue
 
-        if _is_agent_smith_root(candidate):
+        if _is_helve_root(candidate):
             return candidate
 
         # Log skipped candidates to make root-discovery mismatches diagnosable.
-        logger.debug("Skipping %s: has agents/ but missing Agent-Smith markers", candidate)
+        logger.debug("Skipping %s: has agents/ but missing Helve markers", candidate)
 
     raise RuntimeError(
-        "Unable to locate an Agent-Smith project root with runtime assets; "
+        "Unable to locate a Helve project root with runtime assets; "
         f"set {PROJECT_ROOT_ENV} to a root with runtime assets"
     )
 
@@ -177,6 +182,41 @@ def _manifest_entry_matches(
     )
 
 
+def _migrate_legacy_data_dir(data_dir: Path) -> None:
+    """Move a pre-rename ``~/.helve`` tree to ``~/.helve``, once.
+
+    The rename to Helve happened after the data root already held memory,
+    sessions, the audit chain and the git repository ``_snapshot.py``
+    maintains.  Creating a fresh empty root instead of moving the old one
+    silently abandons all of it, so this runs before any directory is created.
+    ``os.rename`` is atomic and path-independent for a plain git repository.
+
+    A pre-existing target wins: once ``~/.helve`` is there the migration is
+    done (or the user built a new root deliberately), and merging two roots
+    would fork the audit chain.
+    """
+    if data_dir.exists():
+        return
+
+    legacy_dir = data_dir.parent / LEGACY_DATA_DIR_NAME
+    if legacy_dir.is_symlink() or not legacy_dir.is_dir():
+        return
+
+    _ensure_real_path(legacy_dir, label="legacy data root")
+    os.rename(legacy_dir, data_dir)
+
+    # The database file carries the old product name too.  Its -wal/-shm
+    # sidecars must travel with it, otherwise SQLite treats the journal as
+    # belonging to a missing database and refuses to open it.
+    legacy_sqlite = data_dir / "sqlite" / "agent-smith.sqlite"
+    for suffix in ("", "-wal", "-shm"):
+        source = legacy_sqlite.with_name(legacy_sqlite.name + suffix)
+        if source.is_file():
+            os.rename(source, source.with_name("helve.sqlite" + suffix))
+
+    logger.info("Migrated legacy data root %s to %s", legacy_dir, data_dir)
+
+
 @dataclass(frozen=True)
 class AppPaths:
     data_dir: Path
@@ -185,7 +225,7 @@ class AppPaths:
     @classmethod
     def defaults(cls) -> AppPaths:
         return cls(
-            data_dir=Path.home() / ".agent-smith",
+            data_dir=Path.home() / DATA_DIR_NAME,
             project_root=_default_project_root(),
         )
 
@@ -195,7 +235,7 @@ class AppPaths:
 
     @property
     def sqlite_path(self) -> Path:
-        return self.data_dir / "sqlite" / "agent-smith.sqlite"
+        return self.data_dir / "sqlite" / "helve.sqlite"
 
     @property
     def smith_profile_dir(self) -> Path:
@@ -208,7 +248,7 @@ class AppPaths:
     @property
     def bundled_skills_dir(self) -> Path:
         """Skill assets shipped with Smith, with a source-tree fallback for development."""
-        installed = Path(sysconfig.get_path("data")) / "agent_smith_common" / "builtin_skills"
+        installed = Path(sysconfig.get_path("data")) / "helve_common" / "builtin_skills"
         if installed.is_dir():
             return installed
         return self.project_root / "agents" / "skills"
@@ -226,6 +266,7 @@ class AppPaths:
         return self.project_root / "agents" / "safety" / "dangerous_commands.json"
 
     def ensure_base_dirs(self) -> None:
+        _migrate_legacy_data_dir(self.data_dir)
         _ensure_private_dir(self.data_dir)
         _ensure_private_dir(self.agent_dir)
         _ensure_private_dir(self.sqlite_path.parent)

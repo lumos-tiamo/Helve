@@ -16,7 +16,10 @@ from typing import Iterable, Mapping
 
 from common.yaml_utils import YamlConfigError, load_yaml
 
-SUBAGENT_SCHEMA = "agentsmith.subagent/v1"
+SUBAGENT_SCHEMA = "helve.subagent/v1"
+# Pre-rename name kept readable for the same reason as the identity schema.
+LEGACY_SUBAGENT_SCHEMA = "agentsmith.subagent/v1"
+ACCEPTED_SUBAGENT_SCHEMAS = (SUBAGENT_SCHEMA, LEGACY_SUBAGENT_SCHEMA)
 
 # A sub-agent must never spawn sub-agents: unbounded recursion would multiply
 # provider spend with no ceiling the parent can see.  Enforced here (stripped
@@ -102,7 +105,7 @@ def _parse_spec(path: Path) -> SubAgentSpec:
             f"Sub-agent document {path} has unknown fields: {', '.join(sorted(unknown))}"
         )
     schema = _non_empty_string(raw.get("schema"), f"Sub-agent document {path}.schema")
-    if schema != SUBAGENT_SCHEMA:
+    if schema not in ACCEPTED_SUBAGENT_SCHEMAS:
         raise SubAgentCatalogError(
             f"Sub-agent document {path} must use schema {SUBAGENT_SCHEMA!r}"
         )

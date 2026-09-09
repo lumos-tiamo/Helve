@@ -6,7 +6,7 @@
 > 保留在此仅供追溯当时的设计取舍，不再随代码更新。
 
 
-> **定位**：Agent-Smith 怎么防止一个 Agent 干出不可逆的坏事——五层防御、31 条危险命令规则、四档风险、审批工作流、Seatbelt 沙箱、防篡改审计链。
+> **定位**：Helve 怎么防止一个 Agent 干出不可逆的坏事——五层防御、31 条危险命令规则、四档风险、审批工作流、Seatbelt 沙箱、防篡改审计链。
 > **适合**：想评估"把这东西放在我机器上安不安全"的人；要改 `engine/safety/` 的人。
 
 `engine/safety/` 2.7k 行，其中 `tool_guard.py` 一个文件就 1365 行——它是全仓库第二大的文件，仅次于 ReAct 循环。这个体量本身就是一个设计声明。
@@ -221,7 +221,7 @@ flowchart TD
 ### 3.5 平台完整性：不可委派的写根
 
 ```python
-_PLATFORM_DATA_ROOT = (Path.home() / ".agent-smith").resolve()
+_PLATFORM_DATA_ROOT = (Path.home() / ".helve").resolve()
 _MEMORY_WRITE_ROOT = _PLATFORM_DATA_ROOT / "agent" / "memory"
 _MEMORY_WRITE_FILES = frozenset({"recent.jsonl", "recent.md", "durable.md"})
 _RUNTIME_CREDENTIAL_PATHS = frozenset({
@@ -238,7 +238,7 @@ Agent **不能写自己的平台目录**，只有记忆目录下那三个文件�
 
 | 规则 | 拦什么 |
 |---|---|
-| `platform-protect-001` | 往 Agent-Smith 平台运行时装包 |
+| `platform-protect-001` | 往 Helve 平台运行时装包 |
 | `platform-protect-002` | 改动或删除平台文件（记忆写入是例外） |
 | `platform-protect-003` | 把输出重定向进平台运行时 |
 
@@ -616,7 +616,7 @@ _READ_ONLY_GIT_SUBCOMMANDS = frozenset({...})   # status / diff / log / show ...
 _DISABLE_VALUES = frozenset({"0", "false", "off", "disabled", "disable", "no"})
 ```
 
-`AGENT_SMITH_FACT_GATE` 可以关掉它——因为它是**行为纠偏**而不是安全边界。而 `ToolGuard` 没有这样的开关。
+`HELVE_FACT_GATE` 可以关掉它——因为它是**行为纠偏**而不是安全边界。而 `ToolGuard` 没有这样的开关。
 
 `CLAUDE.md` 还记了一条演进：
 
@@ -824,7 +824,7 @@ return (
 
 | 类别 | 内容 |
 |---|---|
-| 凭据目录（6） | `.ssh` `.gnupg` `.aws` `.kube` `.agent-smith` `.docker` |
+| 凭据目录（6） | `.ssh` `.gnupg` `.aws` `.kube` `.helve` `.docker` |
 | 工具配置（2 组） | `.config/gh` `.config/gcloud` |
 | macOS 钥匙串 | `Library/Keychains` |
 | 环境文件 | `.env` 及 `.env.*` |
@@ -917,10 +917,10 @@ def _is_hardlink_protected_path(path: Path) -> bool:
 
 ```python
 _DEFAULT_RUNTIME_SECRET_PATHS = (
-    Path.home() / ".agent-smith" / "config.yaml",
-    Path.home() / ".agent-smith" / "config.yml",
-    Path.home() / ".agent-smith" / "agent" / "config.yaml",
-    Path.home() / ".agent-smith" / "agent" / "config.yml",
+    Path.home() / ".helve" / "config.yaml",
+    Path.home() / ".helve" / "config.yml",
+    Path.home() / ".helve" / "agent" / "config.yaml",
+    Path.home() / ".helve" / "agent" / "config.yml",
 )
 ```
 
@@ -928,7 +928,7 @@ _DEFAULT_RUNTIME_SECRET_PATHS = (
 
 沙箱要挡住的场景是：模型请求执行一条 shell 命令去读自己的配置文件，把 API key 打印出来（然后可能出现在会话记录、日志、或被后续工具发到外部）。
 
-注意 `.agent-smith` 已经在 `_CREDENTIAL_DIRECTORIES` 里了，这四条路径是**额外的显式声明**——纵深防御，即使目录规则将来被改动，这四条仍然拦得住最关键的文件。
+注意 `.helve` 已经在 `_CREDENTIAL_DIRECTORIES` 里了，这四条路径是**额外的显式声明**——纵深防御，即使目录规则将来被改动，这四条仍然拦得住最关键的文件。
 
 `_OPTIONAL_ENV_KEYS = ("LANG", "LC_ALL", "TERM", "TZ", "NO_COLOR")` 则是环境白名单，和 [12 · MCP 集成](../subsystems/26-MCP集成.md) §3.1 的 MCP 子进程白名单**几乎相同**（少一个 `LC_CTYPE`）。项目里凡是要跑不受控子进程的地方都用同一套思路。
 
@@ -1101,7 +1101,7 @@ close_audit_chains()
 | **`combined_redirect_to_platform_data_blocked`** | **shell 重定向**写平台数据要拦 |
 | `extract_shell_paths_captures_combined_redirect` | 路径提取要认出 `>&`/`2>` 这类组合重定向 |
 
-第二和第三条是典型的"发现即修但漏掉同类分支"：拦住了 `pip install --target ~/.agent-smith` 之后，还要拦 `pip install ~/.agent-smith/x --target .`；拦住了直接写文件之后，还要拦 `echo x > ~/.agent-smith/config.yaml`。
+第二和第三条是典型的"发现即修但漏掉同类分支"：拦住了 `pip install --target ~/.helve` 之后，还要拦 `pip install ~/.helve/x --target .`；拦住了直接写文件之后，还要拦 `echo x > ~/.helve/config.yaml`。
 
 `memory_views_may_be_written_by_the_memory_path` 与 `platform_writes_outside_memory_remain_blocked` 是一对：记忆视图是平台数据里**唯一允许写**的东西，而且只能由记忆路径写。`memory_exception_does_not_bypass_fact_gate` 再补一刀——这个例外不能顺带绕过事实门。
 

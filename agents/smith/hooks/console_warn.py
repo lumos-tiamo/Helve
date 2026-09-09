@@ -65,7 +65,7 @@ class ConsoleWarnHook(PostToolHook):
         tool_output: Any
     ) -> list[str]:
         """检查编辑的代码是否包含调试语句"""
-        # 只检查 edit_file 工具（Agent-Smith 工具名；路径参数键是 path）
+        # 只检查 edit_file 工具（Helve 工具名；路径参数键是 path）
         if tool_name != "edit_file":
             return []
 

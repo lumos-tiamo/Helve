@@ -7,7 +7,7 @@
 
 > **源文件**：`engine/execution/react/react_loop.py`
 >
-> **定位**：ReAct Loop 是 Agent-Smith 执行引擎的最内层循环——LLM 在单个技能步骤内的"思考 → 调工具 → 观察 → 再思考"核心循环。所有 Agent 输出（文本/流式/事件）最终都经过这里。
+> **定位**：ReAct Loop 是 Helve 执行引擎的最内层循环——LLM 在单个技能步骤内的"思考 → 调工具 → 观察 → 再思考"核心循环。所有 Agent 输出（文本/流式/事件）最终都经过这里。
 
 ---
 

@@ -46,7 +46,7 @@ def test_macos_seatbelt_rejects_workspace_paths_with_control_characters(
     [
         ".ssh",
         ".git",
-        ".agent-smith",
+        ".helve",
         ".config/gh",
         "Library/Keychains",
     ],
@@ -316,7 +316,7 @@ def test_macos_seatbelt_blocks_nested_env_variants_but_allows_normal_files(
         ".ENV",
         "nested/.SSH/id_ed25519",
         "certs/client.PEM",
-        ".agent-smith/config.yaml",
+        ".helve/config.yaml",
         ".docker/config.json",
         ".config/gh/hosts.yml",
         ".config/gcloud/credentials.db",

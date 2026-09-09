@@ -58,7 +58,7 @@ flowchart TD
 | GET | `/api/agent/skills` | 技能列表 |
 | PUT | `/api/agent/skills/{name}` | 启停某个技能 |
 | GET | `/api/agent/mcp` | MCP 服务器与工具 |
-| PUT | `/api/agent/project-instructions` | 生成项目 `.smith/SMITH.md` 模板 |
+| PUT | `/api/agent/project-instructions` | 生成项目 `.helve/HELVE.md` 模板 |
 
 ### 2.4 记忆与用量（2）
 
@@ -117,7 +117,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["首次启动"] --> B{"~/.agent-smith/auth_token 存在且非空"}
+    A["首次启动"] --> B{"~/.helve/auth_token 存在且非空"}
     B -->|"是"| C["读它"]
     B -->|"否"| D["secrets.token_urlsafe(32)"]
     D --> E["os.open with O_NOFOLLOW"]
@@ -1080,7 +1080,7 @@ return {
     "version": "0.2.0",
     "started_at": _STARTED_AT,
     "stale": _running_stale_code(),
-    "nonce": os.environ.get("SMITH_SERVER_NONCE") or None,
+    "nonce": os.environ.get("HELVE_SERVER_NONCE") or None,
 }
 ```
 
@@ -1150,11 +1150,11 @@ except OSError:
 
 `stale` 和 `nonce` 是**两个独立的问题**，注释强调 "both required"。
 
-nonce 处理的是启动竞争：shell 启动后端时会设一个环境变量 `SMITH_SERVER_NONCE`，服务器把它回显在 health 响应里。
+nonce 处理的是启动竞争：shell 启动后端时会设一个环境变量 `HELVE_SERVER_NONCE`，服务器把它回显在 health 响应里。
 
 ```mermaid
 flowchart TD
-    A["shell 启动后端<br/>SMITH_SERVER_NONCE=abc123"] --> B["探测 :8000/api/health"]
+    A["shell 启动后端<br/>HELVE_SERVER_NONCE=abc123"] --> B["探测 :8000/api/health"]
     B --> C{"nonce 是什么"}
     C -->|"abc123"| D["✓ 是我启动的那个"]
     C -->|"其他值"| E["✗ 别人的 server<br/>赢得了这个端口"]

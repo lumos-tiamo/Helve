@@ -12,9 +12,9 @@ from engine.tool.interface import ToolCall, ToolDefinition
 from ..schemas.project_instruction import ProjectInstructionOut
 
 
-PROJECT_INSTRUCTION_TEMPLATE = """# Agent-Smith Project Instructions
+PROJECT_INSTRUCTION_TEMPLATE = """# Helve Project Instructions
 
-Use this file for instructions that should apply whenever Agent-Smith works in this repository.
+Use this file for instructions that should apply whenever Helve works in this repository.
 
 ## Project overview
 
@@ -36,8 +36,8 @@ class ProjectInstructionService:
 
     async def initialize(self, working_dir: str | Path) -> ProjectInstructionOut:
         project_root = self._project_root(working_dir)
-        smith_dir = project_root / ".smith"
-        target = smith_dir / "SMITH.md"
+        smith_dir = project_root / ".helve"
+        target = smith_dir / "HELVE.md"
 
         self._ensure_safe_target(smith_dir, target)
         if target.is_file():
@@ -74,8 +74,8 @@ class ProjectInstructionService:
             raise HTTPException(403, "Project instructions cannot be initialized at this path")
 
         try:
-            # exist_ok: a .smith/ left by other tooling must not be mistaken for
-            # an existing SMITH.md — the FileExistsError below belongs to O_EXCL.
+            # exist_ok: a .helve/ left by other tooling must not be mistaken for
+            # an existing HELVE.md — the FileExistsError below belongs to O_EXCL.
             smith_dir.mkdir(mode=0o755, exist_ok=True)
             self._ensure_safe_target(smith_dir, target)
             no_follow = getattr(os, "O_NOFOLLOW", 0)

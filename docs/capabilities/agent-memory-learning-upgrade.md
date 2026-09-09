@@ -35,7 +35,7 @@ Compiler、Reviewer、Dream 和写入代码必须读取同一份 Policy：
 
 | 文件 | 职责 | 正常对话是否读取 |
 |---|---|---|
-| `SMITH.md` | 用户手写的项目规则；自动学习永不修改 | 固定加载 |
+| `HELVE.md` | 用户手写的项目规则；自动学习永不修改 | 固定加载 |
 | `engine/memory/MEMORY_POLICY.md` | 三个记忆文件的唯一生成和审核规则 | 仅 Compiler、Reviewer、Dream 读取 |
 | `memory/recent.jsonl` | 已清洗的对话、结果和反馈证据 | 不直接注入 Prompt |
 | `context.md` | Smith 学到的用户偏好与协作共识 | 每次加载 |
@@ -164,7 +164,7 @@ PromptAssembler
 5. `durable.md` 只包含确认事实、决策、可复用流程和已验证陷阱。
 6. Reviewer 拒绝、模型超时或写入失败时，旧记忆保留且当前对话正常结束。
 7. Dream 不增加证据中不存在的新事实。
-8. `SMITH.md` 永远不被自动学习修改。
+8. `HELVE.md` 永远不被自动学习修改。
 9. 三个 Markdown 均严格符合 MemoryPolicy 的固定结构和字符预算。
 
 ## 10. 非目标

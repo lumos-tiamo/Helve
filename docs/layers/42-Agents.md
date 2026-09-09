@@ -1,6 +1,6 @@
 # 06 · Agents 内容层
 
-> **当前实现说明**：`agents/` 是可版本化的内容与本地 provider 目录。它不保存运行时 profile 副本，也不实现插件系统；运行时状态位于 `~/.agent-smith/`。
+> **当前实现说明**：`agents/` 是可版本化的内容与本地 provider 目录。它不保存运行时 profile 副本，也不实现插件系统；运行时状态位于 `~/.helve/`。
 
 > **目录级地图**：逐目录职责、边界澄清（`smith/` vs `identities/`、`conditions/` vs `gates/` 等）与内容契约速查见 [`agents/README.md`](../../agents/README.md)。
 
@@ -9,7 +9,7 @@
 | 路径 | 内容 | 被谁加载 |
 | --- | --- | --- |
 | `agents/smith/` | Smith 的静态身份提示片段：`role.md`、`style.md`、`workflow.md`、`toolbox.md`、`context.md`；另含机器配置 `config.yaml`（不进 prompt，见下节） | md → 运行时 Prompt 装配；`config.yaml` → `engine/llm/model_config.py` 与 `preparation.py` |
-| `agents/smith/hooks.yaml` | 内置 hook 配置：4 个内置 hook（`config_protection`、`console_warn`、`cost_tracker`、`quality_gate`）的启用声明 | `engine/execution/hooks/tool/loader.py`，经 `preparation.py` 装入 `HookRegistry`；用户级 hook 另从 `~/.agent-smith/hooks.yaml` 加载 |
+| `agents/smith/hooks.yaml` | 内置 hook 配置：4 个内置 hook（`config_protection`、`console_warn`、`cost_tracker`、`quality_gate`）的启用声明 | `engine/execution/hooks/tool/loader.py`，经 `preparation.py` 装入 `HookRegistry`；用户级 hook 另从 `~/.helve/hooks.yaml` 加载 |
 | `agents/smith/hooks/` | 上述内置 hook 的 Python 实现 | 同上（按 `hooks.yaml` 中的 `module` 路径动态加载） |
 | `agents/identities/` | 声明式身份档案（YAML） | `engine.identity.IdentityCatalog` |
 | `agents/pipelines/` | identity route 对应的 skill chain | `SkillChain` |
@@ -25,7 +25,7 @@
 
 `agents/smith/` 是**首次安装的一次性种子**：`server/app/infrastructure/profile_files.py`
 的 `init_smith_profile_files` 只在目标文件不存在时复制。对已有安装修改此目录不生效；
-运行时的事实来源是 `~/.agent-smith/agent/`。
+运行时的事实来源是 `~/.helve/agent/`。
 
 ### `config.yaml` 是机器配置，不进 prompt
 
@@ -33,8 +33,8 @@ Prompt 装配（assembler）只读取 6 个 md（`role.md`、`style.md`、`workf
 `toolbox.md`、`context.md` 与 `agents/output_style.md`）。`config.yaml` 不进 prompt，
 它是机器配置，承担两件事：
 
-- **`llm`**：五层 merge 中的一层（env 覆盖 → `~/.agent-smith/config.yaml` →
-  本文件 → `~/.agent-smith/agent/config.yaml` → 会话级 override），由
+- **`llm`**：五层 merge 中的一层（env 覆盖 → `~/.helve/config.yaml` →
+  本文件 → `~/.helve/agent/config.yaml` → 会话级 override），由
   `engine/llm/model_config.py` 解析；
 - **`tools.enabled`**：严格白名单（fail-closed），由 `preparation.py` 读取运行时
   副本并与 identity 的 allowlist 取交集。
@@ -53,15 +53,15 @@ stop hook 在每次 Agent 响应结束时执行。每个条目的字段：
 - `description`：一句话说明。
 
 加载方是 `engine/execution/hooks/tool/loader.py`，在 `preparation.py` 中先装入内置
-`agents/smith/hooks.yaml`，再追加加载用户级 `~/.agent-smith/hooks.yaml`（如存在），
+`agents/smith/hooks.yaml`，再追加加载用户级 `~/.helve/hooks.yaml`（如存在），
 统一注册进 `HookRegistry`。
 
 ## 身份：声明能力档案，而非多 Agent
 
-每个 `agents/identities/*.yaml` 都采用 `agentsmith.identity/v1`。最小结构如下：
+每个 `agents/identities/*.yaml` 都采用 `helve.identity/v1`。最小结构如下：
 
 ```yaml
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: research
 name: Research Agent
 description: 面向证据收集的身份。
@@ -211,4 +211,4 @@ Smith 是 MCP client。配置的 stdio 或 streamable HTTP server 由 `engine.mc
 
 ## 运行时可编辑内容
 
-`~/.agent-smith/agent/skills/` 用于用户安装技能；`builtin/skills/` 用于发行版携带的技能，两者不能混为一类。`context.md`、`memory/recent.md` 与 `memory/durable.md` 是受 Memory Policy 维护的视图；`SMITH.md` 则由用户维护，自动学习不能覆盖它。详见[记忆系统](../subsystems/21-记忆系统.md)。
+`~/.helve/agent/skills/` 用于用户安装技能；`builtin/skills/` 用于发行版携带的技能，两者不能混为一类。`context.md`、`memory/recent.md` 与 `memory/durable.md` 是受 Memory Policy 维护的视图；`HELVE.md` 则由用户维护，自动学习不能覆盖它。详见[记忆系统](../subsystems/21-记忆系统.md)。

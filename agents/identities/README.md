@@ -10,7 +10,7 @@
 身份不是新的 Agent，也不会创建 `employees/<id>` 一类的运行时档案。Smith
 始终是唯一运行中的 Agent；每个身份只是一次任务的领域指令、能力边界与
 路由规则。可变记忆和 pipeline 检查点按身份写入：
-`~/.agent-smith/agent/identity-state/<identity-id>/`。
+`~/.helve/agent/identity-state/<identity-id>/`。
 
 ## 已发布的 Coding 身份插件
 
@@ -44,7 +44,7 @@ gate 照跑，不通过就不进下一节点。
 ## 最小格式
 
 ```yaml
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: legal
 name: 法务助手
 description: 合同审查与合规问答。

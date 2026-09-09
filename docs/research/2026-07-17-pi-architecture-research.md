@@ -1,6 +1,6 @@
 # Pi 架构调研：一个可扩展本地 Agent Harness 是怎样跑起来的
 
-> 范围：只审阅 `earendil-works/pi` 的一手 GitHub 源码和仓库文档；基线为 `main` 在 `216e672e7c9fc65682553394b74e483c0c9e47f7`（2026-07-16）。本文描述的是该提交的实现，不代表 Agent-Smith 已具备相同能力。
+> 范围：只审阅 `earendil-works/pi` 的一手 GitHub 源码和仓库文档；基线为 `main` 在 `216e672e7c9fc65682553394b74e483c0c9e47f7`（2026-07-16）。本文描述的是该提交的实现，不代表 Helve 已具备相同能力。
 
 ## 结论先行
 

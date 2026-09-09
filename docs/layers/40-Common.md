@@ -47,14 +47,14 @@ flowchart TD
 ```python
 @dataclass(frozen=True)
 class AppPaths:
-    data_dir: Path        # ~/.agent-smith
+    data_dir: Path        # ~/.helve
     project_root: Path    # 仓库根
 ```
 
 | 属性 | 值 |
 |---|---|
 | `agent_dir` | `data_dir / "agent"` |
-| `sqlite_path` | `data_dir / "sqlite" / "agent-smith.sqlite"` |
+| `sqlite_path` | `data_dir / "sqlite" / "helve.sqlite"` |
 | `builtin_skills_dir` | `data_dir / "builtin" / "skills"` |
 | `smith_profile_dir` | `project_root / "agents" / "smith"` |
 | `builtin_tools_dir` | `project_root / "agents" / "tools"` |
@@ -68,7 +68,7 @@ class AppPaths:
 @property
 def bundled_skills_dir(self) -> Path:
     """Skill assets shipped with Smith, with a source-tree fallback for development."""
-    installed = Path(sysconfig.get_path("data")) / "agent_smith_common" / "builtin_skills"
+    installed = Path(sysconfig.get_path("data")) / "helve_common" / "builtin_skills"
     if installed.is_dir():
         return installed
     return self.project_root / "agents" / "skills"
@@ -82,8 +82,8 @@ wheel 安装后技能在 `sysconfig` 的 data 目录（由 `common/pyproject.tom
 
 ```mermaid
 flowchart TD
-    A["_default_project_root()"] --> B{"AGENT_SMITH_PROJECT_ROOT 有值"}
-    B -->|"有"| C{"_is_agent_smith_root()"}
+    A["_default_project_root()"] --> B{"HELVE_PROJECT_ROOT 有值"}
+    B -->|"有"| C{"_is_helve_root()"}
     C -->|"否"| E1["RuntimeError：<br/>必须指向带运行时资产的根"]
     C -->|"是"| OK1["用它"]
     B -->|"无"| D{"源码位置是有效根吗<br/>__file__ 的上两级"}
@@ -91,7 +91,7 @@ flowchart TD
     D -->|"否"| E["从 cwd 向上遍历祖先"]
     E --> F{"有 agents/ 目录"}
     F -->|"无"| E
-    F -->|"有"| G{"_is_agent_smith_root()"}
+    F -->|"有"| G{"_is_helve_root()"}
     G -->|"是"| OK3["用它"]
     G -->|"否"| H["logger.debug 记下跳过的候选<br/>继续向上"]
     H --> E
@@ -104,7 +104,7 @@ flowchart TD
 **签名校验**：
 
 ```python
-def _is_agent_smith_root(project_root: Path) -> bool:
+def _is_helve_root(project_root: Path) -> bool:
     agents_dir = project_root / "agents"
     return (
         (agents_dir / "smith" / "config.yaml").is_file()
@@ -115,7 +115,7 @@ def _is_agent_smith_root(project_root: Path) -> bool:
 
 三个条件缺一不可。注释说明了为什么不能只看 `agents/` 存不存在：
 
-> Stricter validation: check for Agent-Smith signature files **to avoid mistaking another project's agents/ directory**.
+> Stricter validation: check for Helve signature files **to avoid mistaking another project's agents/ directory**.
 
 而且跳过的候选会打 `logger.debug`：
 
@@ -203,12 +203,12 @@ stale_paths = sorted(..., key=lambda path: len(path.parts), reverse=True)
 
 §2.4 介绍了四个辅助函数各自做什么，这里换成攻击者视角看它们**一起**挡住了什么。
 
-威胁模型很具体：`~/.agent-smith/` 下的受管目录会被程序自动创建、覆盖、删除。如果攻击者能在这棵树里放一个符号链接指向树外，就能让 Smith 用**自己的权限**去写或删任意文件。
+威胁模型很具体：`~/.helve/` 下的受管目录会被程序自动创建、覆盖、删除。如果攻击者能在这棵树里放一个符号链接指向树外，就能让 Smith 用**自己的权限**去写或删任意文件。
 
 **逃逸方式一：末段符号链接。**
 
 ```
-~/.agent-smith/builtin/skills/evil  →  /etc/cron.d/
+~/.helve/builtin/skills/evil  →  /etc/cron.d/
 ```
 
 程序要往 `builtin/skills/evil/SKILL.md` 写文件，跟随链接后实际写到了 `/etc/cron.d/SKILL.md`。
@@ -216,7 +216,7 @@ stale_paths = sorted(..., key=lambda path: len(path.parts), reverse=True)
 **逃逸方式二：中间段符号链接。**
 
 ```
-~/.agent-smith/builtin  →  /tmp/attacker/
+~/.helve/builtin  →  /tmp/attacker/
 ```
 
 这次链接不在末端，而在路径中间。只检查最后一段的实现会完全看不见它。`_ensure_real_path` 因此**逐段检查**：
@@ -310,7 +310,7 @@ for part in parts:
 
 ```mermaid
 flowchart TD
-    A["_default_project_root()"] --> B{"AGENT_SMITH_PROJECT_ROOT 设了吗"}
+    A["_default_project_root()"] --> B{"HELVE_PROJECT_ROOT 设了吗"}
     B -->|"是"| C{"通过签名校验吗"}
     C -->|"是"| R1["✓ 用它"]
     C -->|"否"| X["✗ 直接抛错<br/>不回落"]
@@ -333,17 +333,17 @@ flowchart TD
 ```python
 if configured_root:
     project_root = Path(configured_root).expanduser().resolve()
-    if not _is_agent_smith_root(project_root):
-        raise RuntimeError(f"{PROJECT_ROOT_ENV} must point to an Agent-Smith root ...")
+    if not _is_helve_root(project_root):
+        raise RuntimeError(f"{PROJECT_ROOT_ENV} must point to an Helve root ...")
     return project_root
 ```
 
-用户明确设了 `AGENT_SMITH_PROJECT_ROOT` 却指错了地方，静默回落到别处会更糟——程序看起来正常工作，但读的是用户没预期的那套资产。直接报错让问题立刻暴露。
+用户明确设了 `HELVE_PROJECT_ROOT` 却指错了地方，静默回落到别处会更糟——程序看起来正常工作，但读的是用户没预期的那套资产。直接报错让问题立刻暴露。
 
 **签名是三个具体文件**：
 
 ```python
-def _is_agent_smith_root(project_root: Path) -> bool:
+def _is_helve_root(project_root: Path) -> bool:
     agents_dir = project_root / "agents"
     return (
         (agents_dir / "smith" / "config.yaml").is_file()
@@ -357,10 +357,10 @@ def _is_agent_smith_root(project_root: Path) -> bool:
 向上搜索时被跳过的候选会记 debug 日志：
 
 ```python
-logger.debug("Skipping %s: has agents/ but missing Agent-Smith markers", candidate)
+logger.debug("Skipping %s: has agents/ but missing Helve markers", candidate)
 ```
 
-注释说明了理由："make root-discovery mismatches diagnosable"。用户在一个有 `agents/` 目录的无关项目里跑 Smith 时，能从日志看到"我确实看到了这个目录，但它不像 Agent-Smith 的根"，而不是只得到一句笼统的"找不到项目根"。
+注释说明了理由："make root-discovery mismatches diagnosable"。用户在一个有 `agents/` 目录的无关项目里跑 Smith 时，能从日志看到"我确实看到了这个目录，但它不像 Helve 的根"，而不是只得到一句笼统的"找不到项目根"。
 
 ---
 
@@ -633,7 +633,7 @@ def _get_paths() -> AppPaths:
     """Lazy initialization: allows runtime environment changes before first access."""
 ```
 
-`AppPaths.defaults()` 会读 `AGENT_SMITH_PROJECT_ROOT` 环境变量并做项目根发现。如果在 import 时就执行，**测试没法在导入之后再设环境变量**。
+`AppPaths.defaults()` 会读 `HELVE_PROJECT_ROOT` 环境变量并做项目根发现。如果在 import 时就执行，**测试没法在导入之后再设环境变量**。
 
 ### 5.2 `__getattr__` 做遗留导出
 
@@ -666,7 +666,7 @@ flowchart LR
 
 **两种 import 写法行为不同**，而且这是 Python 的固有语义不是 bug。文档把它写下来，是因为测试里 monkeypatch 路径时踩这个坑会非常困惑——你以为换了路径，但某个模块在 import 时就把旧的绑住了。
 
-实践中有一条相关教训：一个 service 的 `_config_path` 是**类属性**，环境变量隔离对它无效，必须 monkeypatch，否则测试会改到真实的 `~/.agent-smith/config.yaml`。**同一类问题的另一个表现形式。**
+实践中有一条相关教训：一个 service 的 `_config_path` 是**类属性**，环境变量隔离对它无效，必须 monkeypatch，否则测试会改到真实的 `~/.helve/config.yaml`。**同一类问题的另一个表现形式。**
 
 ---
 
@@ -707,7 +707,7 @@ raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 只有第一层的话，`reset_paths()` 之后模块常量仍是旧值；只有第二层的话，导入模块就会触发项目根发现。两层都要。
 
-`AppPaths.defaults()` 内部会调 `_default_project_root()`（见 §2.7），而后者可能**抛异常**——在一个不是 Agent-Smith 项目的目录里导入 `common.config` 不该炸掉导入。惰性把这个失败推迟到真正需要路径的时候，那时报错也更有上下文。
+`AppPaths.defaults()` 内部会调 `_default_project_root()`（见 §2.7），而后者可能**抛异常**——在一个不是 Helve 项目的目录里导入 `common.config` 不该炸掉导入。惰性把这个失败推迟到真正需要路径的时候，那时报错也更有上下文。
 
 ### 5.6 `reset_paths()` 的两个用途
 
@@ -719,7 +719,7 @@ def reset_paths(paths: AppPaths | None = None) -> None:
 
 一行赋值，两个场景：
 
-- **测试**：传一个指向临时目录的 `AppPaths`，让测试不碰真实的 `~/.agent-smith`
+- **测试**：传一个指向临时目录的 `AppPaths`，让测试不碰真实的 `~/.helve`
 - **运行时重配**：传 `None` 清空，下次访问重新走一遍发现流程
 
 传 `None` 是"重置"而不是"设成空"——因为 `_get_paths()` 看到 `None` 会重新构造。这个双重语义让同一个函数既能注入也能清除。
@@ -761,7 +761,7 @@ docstring 里那句警告（§5.3 引用过）在这里有了完整背景：
 两个消费方：
 
 - `engine/observability/trace_store.py` —— 每次 run 一条链
-- `engine/safety/tool_guard.py` —— 装机级审计日志（`~/.agent-smith/audit.jsonl`）
+- `engine/safety/tool_guard.py` —— 装机级审计日志（`~/.helve/audit.jsonl`）
 
 ### 6.1 `append()` 的六个步骤
 
@@ -1166,7 +1166,7 @@ def _read_anchor(self) -> dict | None:
 |---|---|---|
 | 私有目录权限 | `0o700` | `paths.py` |
 | 私有文件权限 | `0o600` | `paths.py` |
-| 项目根环境变量 | `AGENT_SMITH_PROJECT_ROOT` | `paths.py` |
+| 项目根环境变量 | `HELVE_PROJECT_ROOT` | `paths.py` |
 | 根签名文件 | 3 个（smith config / smith identity / 任一 SKILL.md） | `paths.py` |
 | 摘要块大小 | 64 KB | `paths.py` |
 | SQLite journal 模式 | WAL | `database.py` |
@@ -1313,7 +1313,7 @@ path.mkdir(parents=True, exist_ok=True, mode=PRIVATE_DIR_MODE)
 path.chmod(PRIVATE_DIR_MODE)                   # ← 只有新建的才设权限
 ```
 
-已存在的目录**直接返回**，不去改它的权限。这条边界很重要：`~/.agent-smith` 的父目录是用户的家目录，程序绝不该因为要保护自己的数据就把 `~` 改成 `0700`——那会影响用户的其他一切。只保护自己创建的东西，是这一层的分寸。
+已存在的目录**直接返回**，不去改它的权限。这条边界很重要：`~/.helve` 的父目录是用户的家目录，程序绝不该因为要保护自己的数据就把 `~` 改成 `0700`——那会影响用户的其他一切。只保护自己创建的东西，是这一层的分寸。
 
 ### 10.2 内建技能镜像（12 个）
 

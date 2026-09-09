@@ -199,7 +199,7 @@ async def test_list_messages_rejects_a_session_not_owned_by_the_agent() -> None:
 def _identity_catalog(tmp_path: Path) -> IdentityCatalog:
     (tmp_path / "smith.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true
@@ -209,7 +209,7 @@ routes: []
     )
     (tmp_path / "legal.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: legal
 name: \u6cd5\u52a1\u52a9\u624b
 routes:
@@ -221,7 +221,7 @@ routes:
     )
     (tmp_path / "coding.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: coding
 name: Coding
 routes: []
@@ -477,15 +477,15 @@ async def test_stream_message_persists_token_usage_with_project_and_model(
             "smith-id",
             "sess-1",
             "hello",
-            working_dir="/tmp/Agent-Smith",
+            working_dir="/tmp/Helve",
         )
     ]
 
     assert captured == {
         "session_id": "sess-1",
         "run_id": "run-1",
-        "project_name": "Agent-Smith",
-        "project_path": "/tmp/Agent-Smith",
+        "project_name": "Helve",
+        "project_path": "/tmp/Helve",
         "model": "gpt-test",
         "usage": {"input_tokens": 10, "output_tokens": 5, "total_tokens": 15},
     }

@@ -1,8 +1,8 @@
-# Pi Agent 设计复核：对 Agent-Smith 内核收敛的启示
+# Pi Agent 设计复核：对 Helve 内核收敛的启示
 
 > 调研日期：2026-08-07<br>
 > 基线：Pi `v0.84.0`，发布于 2026-08-06，对应 commit [`a5f43bf8aff3c55752432655f7334e3dafd1e256`](https://github.com/earendil-works/pi/commit/a5f43bf8aff3c55752432655f7334e3dafd1e256)。<br>
-> 范围：只使用 Pi 官方仓库源码和官方文档；源码链接固定到上述 commit。本文是设计比较，不代表 Agent-Smith 已支持 Pi 的能力，也不建议直接移植实现。
+> 范围：只使用 Pi 官方仓库源码和官方文档；源码链接固定到上述 commit。本文是设计比较，不代表 Helve 已支持 Pi 的能力，也不建议直接移植实现。
 
 ## 结论
 
@@ -121,7 +121,7 @@ Pi 官方设计原则明确不内建 MCP、sub-agents、permission popups、plan
 
 它不意味着 Pi 整体功能少。`v0.84.0` 已包含复杂 TUI、树状 session、compaction、多个运行模式、provider/auth、packages、extensions，以及实验性 remote-session client。简单的是**所有权边界**，不是总代码量。[v0.84.0 release](https://github.com/earendil-works/pi/releases/tag/v0.84.0)
 
-## 对 Agent-Smith 的建议顺序
+## 对 Helve 的建议顺序
 
 1. **先统一工具契约。** 让 schema、side effect、risk、approval、execution environment、idempotency、concurrency 和 output limit 只有一个来源。
 2. **再统一调用 seam。** 所有 direct ReAct、forced skill 和 pipeline node 最终都走同一条 `validate → decide → approve → execute → finalize` 路径。

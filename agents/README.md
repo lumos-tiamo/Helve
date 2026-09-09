@@ -18,7 +18,7 @@
 | `smith/` | 默认身份种子：`config.yaml` + `role.md` / `style.md` / `workflow.md` / `toolbox.md` / `context.md` | `engine/context/assembler.py` 逐层装配 |
 | `smith/hooks/` | 内置 Hook 实现（PreTool / PostTool / Stop 钩子类） | `engine/execution/hooks/tool/loader.py`（由 `orchestration/preparation.py` 触发） |
 | `smith/hooks.yaml` | Hook 启用配置（声明加载哪些内置 Hook） | 同上 |
-| `identities/` | 声明式领域身份（YAML `agentsmith.identity/v1`） | `engine/identity/catalog.py` |
+| `identities/` | 声明式领域身份（YAML `helve.identity/v1`） | `engine/identity/catalog.py` |
 | `pipelines/` | SkillChain 编排定义（YAML） | `engine/execution/pipeline/skill_chain.py` |
 | `skills/` | 任务 SOP（SKILL.md 方法体） | `engine/skill/registry.py` |
 | `tools/` | 内建工具 provider（`TOOL_META` + `execute`） | `engine/tool/registry.py` |
@@ -62,7 +62,7 @@
 | 门禁 | 模块级 `GATES = {"key": Factory}`；Gate 实现 `async check(output, ctx) -> GateResult(verdict, reason, retry_hint)`，可选声明 `llm_prompt` 触发 LLM 复核 |
 | 条件 | 模块级 `CONDITIONS = {"key": fn}`，`fn(ctx) -> bool` |
 | Skill | 目录名 == frontmatter `name`，正文为 Markdown 方法体 |
-| 身份 | YAML `schema: agentsmith.identity/v1` |
+| 身份 | YAML `schema: helve.identity/v1` |
 | Pipeline | YAML `steps:` 节点列表 + 顶层 `base_gate(s)` / `backtrack` |
 
 Pipeline 执行规则：节点先从 `SkillRegistry` 解析出与 `steps[].skill` 同名的

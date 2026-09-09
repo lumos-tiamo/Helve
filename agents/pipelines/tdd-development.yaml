@@ -12,7 +12,7 @@ steps:
       service/browser is never a prerequisite. Do not change production code in this node, and do
       not hand off to another skill.
       Report the runnable command, observed failing output, why it proves this exact bug, and end
-      with `<!-- agent-smith:red-loop-ready -->`.
+      with `<!-- helve:red-loop-ready -->`.
 
   - skill: tdd-workflow
     gate: tdd_evidence
@@ -20,7 +20,7 @@ steps:
     instructions: |
       Implement the requested feature or fix using the upstream RED → GREEN → refactor workflow.
       For a bug, use the prior red-capable loop; for a new feature, write and run a failing behavior
-      test first. Agent-Smith resolves test commands from the target workspace's existing manifests,
+      test first. Helve resolves test commands from the target workspace's existing manifests,
       lock files, CI files, and test configuration. Do not run the upstream ECC host command
       `node scripts/setup-package-manager.js --detect`, rely on `.claude` or global package-manager
       settings, invoke a command that can download a package (such as bare `npx`), or install tools.
@@ -28,7 +28,7 @@ steps:
       one. Treat 80% coverage as a project-configured goal, never as an invented universal pass
       condition. Do not publish, start code review, or hand off to another skill.
       End with a `TddEvidence` handoff containing concrete RED command/output, GREEN command/output,
-      changed tests, and residual risk; end it with `<!-- agent-smith:tdd-implementation-ready -->`.
+      changed tests, and residual risk; end it with `<!-- helve:tdd-implementation-ready -->`.
 
   - skill: verification-loop
     gate: tdd_verification
@@ -42,4 +42,4 @@ steps:
       not install, download, or invoke generic `npx` tooling. Return one consolidated `TddEvidence`
       containing the `VERIFICATION REPORT`; do not claim readiness if a required applicable check
       fails. End with
-      `<!-- agent-smith:tdd-evidence-ready -->`.
+      `<!-- helve:tdd-evidence-ready -->`.

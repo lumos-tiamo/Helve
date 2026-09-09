@@ -212,7 +212,7 @@ When 有多种可行方案: 选择当前成本最低、最容易验证的那条
 > 一个身份是**唯一常驻 Smith agent 的一份能力档案**。它不是一个单独运行的 agent，也从不拥有单独的服务端档案记录。
 
 ```yaml
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: coding
 name: Coding Agent
 description: ...
@@ -237,7 +237,7 @@ routes:
 
 | 校验 | 失败时 |
 |---|---|
-| `schema` 必须是 `agentsmith.identity/v1` | `IdentityCatalogError` |
+| `schema` 必须是 `helve.identity/v1` | `IdentityCatalogError` |
 | **未知字段一律报错** | 列出所有未知字段名 |
 | `default` 必须是 boolean | 报错 |
 | `priority` 必须是 int（且**显式排除 bool**） | 报错 |
@@ -527,7 +527,7 @@ _UNTRUSTED_FENCE_CLOSE = "[/UNTRUSTED_EXTERNAL_CONTENT]"
 三个限定词都是约束：**用户明确给定的站点内**、**遵守 robots.txt**、**有限**。
 
 ```python
-USER_AGENT = "AgentSmithCrawler/1.0"
+USER_AGENT = "HelveCrawler/1.0"
 MAX_PAGES = 50
 MAX_DEPTH = 4
 MAX_DOCUMENT_BYTES = 512 * 1024
@@ -607,7 +607,7 @@ if len(data) > MAX_DOCUMENT_BYTES:
 
 `_safe_environment()` 的 docstring 说明了为什么 git 子进程要单独构造环境：
 
-> Git may execute **repository-controlled** hooks, filters, and helpers. Those subprocesses **must not inherit provider credentials** or other service secrets owned by the Agent-Smith runtime.
+> Git may execute **repository-controlled** hooks, filters, and helpers. Those subprocesses **must not inherit provider credentials** or other service secrets owned by the Helve runtime.
 
 即使前面五道覆盖都做了，仍然可能有 git 执行外部程序的路径（比如那两个残留项）。**纵深防御**：就算它真的执行了什么，那个进程也读不到 API key。
 
@@ -714,8 +714,8 @@ flowchart TD
 `common/pyproject.toml` 里每个技能都要写一条：
 
 ```toml
-"agent_smith_common/builtin_skills/grilling" = ["../agents/skills/grilling/SKILL.md"]
-"agent_smith_common/builtin_skills/grilling/agents" = ["../agents/skills/grilling/agents/openai.yaml"]
+"helve_common/builtin_skills/grilling" = ["../agents/skills/grilling/SKILL.md"]
+"helve_common/builtin_skills/grilling/agents" = ["../agents/skills/grilling/agents/openai.yaml"]
 ```
 
 **有测试断言这份声明和实际技能保持同步**——因为漏一条的后果是"开发环境能用，wheel 安装后这个技能消失"，而这类 bug 只有真正装一次才能发现。
@@ -867,7 +867,7 @@ flowchart LR
 | `config-protection` | Pre | ✅ | 阻止改 linter / formatter / 类型检查器的配置文件 |
 | `console-warn` | Post | ✅ | 警告 `console.log` / `print()` 之类的调试语句 |
 | `quality-gate` | Post | ✅ | 跑格式化和 lint 检查（异步） |
-| `cost-tracker` | Stop | ✅ | 把 token 用量写进 `~/.agent-smith/metrics/costs.jsonl` |
+| `cost-tracker` | Stop | ✅ | 把 token 用量写进 `~/.helve/metrics/costs.jsonl` |
 
 ### 7.1 `config-protection` 防的不是用户
 
@@ -899,10 +899,10 @@ flowchart LR
 加载顺序是**先内建后用户**：
 
 ```
-agents/smith/hooks.yaml  →  ~/.agent-smith/hooks.yaml
+agents/smith/hooks.yaml  →  ~/.helve/hooks.yaml
 ```
 
-用户写一个实现 `PreToolHook` / `PostToolHook` / `StopHook` 的类，在 `~/.agent-smith/hooks.yaml` 里加一条即可。
+用户写一个实现 `PreToolHook` / `PostToolHook` / `StopHook` 的类，在 `~/.helve/hooks.yaml` 里加一条即可。
 
 ---
 
@@ -922,7 +922,7 @@ agents/smith/hooks.yaml  →  ~/.agent-smith/hooks.yaml
 
 ### 8.1 `instructions` 在干什么
 
-它不是"补充说明"，而是**把上游技能改造成适配 Agent-Smith 的版本**。三个典型例子：
+它不是"补充说明"，而是**把上游技能改造成适配 Helve 的版本**。三个典型例子：
 
 **① 把并行 subagent 改成顺序执行**（`code-review.yaml`）：
 
@@ -958,7 +958,7 @@ flowchart TD
         G2 --> G3["3. pipelines/*.yaml 的 gate 引用它"]
     end
     subgraph 加身份
-        I1["1. 建 agents/identities/xxx.yaml"] --> I2["2. schema 必须是 agentsmith.identity/v1"]
+        I1["1. 建 agents/identities/xxx.yaml"] --> I2["2. schema 必须是 helve.identity/v1"]
         I2 --> I3["3. 只能有一个 default"]
     end
 ```
@@ -982,7 +982,7 @@ flowchart TD
 | 危险命令规则 | 31 |
 | 内建钩子 | 4 |
 | Smith 人格文件 | 5（role / style / workflow / toolbox / context） |
-| 身份 schema | `agentsmith.identity/v1` |
+| 身份 schema | `helve.identity/v1` |
 | examples 命中得分 | 10 |
 | keywords 命中得分 | 3 |
 | 路由优先级 | git 30 / requirements-research 30 / tdd-development 20 / code-review 10 |

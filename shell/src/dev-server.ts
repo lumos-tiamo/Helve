@@ -82,9 +82,9 @@ function stderrTail(chunks: string[]): string {
 
 const LOOPBACK_HOST_RE = /^(localhost|127\.\d+\.\d+\.\d+|\[?::1\]?)$/;
 
-/** Refuse a SMITH_SERVER_URL that would exfiltrate the local auth token.
+/** Refuse a HELVE_SERVER_URL that would exfiltrate the local auth token.
  *
- * Every request carries `Authorization: Bearer <~/.agent-smith/auth_token>` and
+ * Every request carries `Authorization: Bearer <~/.helve/auth_token>` and
  * setup can POST the user's LLM API key.  Sending those in cleartext to a
  * non-loopback host is never acceptable; an explicit https:// remote is the
  * user's deployment choice, but a plaintext http:// one is refused outright.
@@ -99,7 +99,7 @@ function assertSafeServerTarget(target: ServerTarget): void {
     .replace(/\.$/, "");
   if (parsed.protocol === "http:" && !LOOPBACK_HOST_RE.test(host)) {
     throw new Error(
-      `SMITH_SERVER_URL=${target.baseUrl} would send the local auth token over cleartext ` +
+      `HELVE_SERVER_URL=${target.baseUrl} would send the local auth token over cleartext ` +
         "HTTP to a remote host; set it to a loopback address or use https://.",
     );
   }
@@ -207,7 +207,7 @@ function registerCleanup(): void {
 }
 
 export function resolveRepoRoot(): string {
-  const configuredRoot = process.env.SMITH_REPO_ROOT?.trim();
+  const configuredRoot = process.env.HELVE_REPO_ROOT?.trim();
   if (configuredRoot) return path.resolve(configuredRoot);
 
   const distDir = path.dirname(fileURLToPath(import.meta.url));
@@ -219,7 +219,7 @@ export function resolveRepoRoot(): string {
 }
 
 function serverTarget(): ServerTarget {
-  const baseUrl = process.env.SMITH_SERVER_URL ?? DEFAULT_SERVER_URL;
+  const baseUrl = process.env.HELVE_SERVER_URL ?? DEFAULT_SERVER_URL;
   // Parse here, not only in assertSafeServerTarget(): this runs first, so its
   // bare `TypeError: Invalid URL` was the only thing the user ever saw, and it
   // names neither the variable at fault nor its value.
@@ -227,12 +227,12 @@ function serverTarget(): ServerTarget {
   try {
     parsedUrl = new URL(baseUrl);
   } catch {
-    throw new Error(`SMITH_SERVER_URL is not a valid URL: ${baseUrl}`);
+    throw new Error(`HELVE_SERVER_URL is not a valid URL: ${baseUrl}`);
   }
   const fallbackPort = parsedUrl.protocol === "https:" ? "443" : "80";
   return {
     baseUrl,
-    envOverride: Boolean(process.env.SMITH_SERVER_URL),
+    envOverride: Boolean(process.env.HELVE_SERVER_URL),
     preferredPort: Number.parseInt(parsedUrl.port || fallbackPort, 10),
   };
 }
@@ -309,7 +309,7 @@ async function inspectExistingServer(
 
   const issue = await compatibilityIssue(target.baseUrl);
   if (!issue) return { healthy: true, connection: { baseUrl: target.baseUrl, started: false } };
-  if (target.envOverride) throw new Error(`Configured SMITH_SERVER_URL points to an incompatible server: ${issue}`);
+  if (target.envOverride) throw new Error(`Configured HELVE_SERVER_URL points to an incompatible server: ${issue}`);
   // The same reason was already computed here; the default path used to drop it
   // and start a second server with no explanation of why the first was rejected.
   return { healthy: true, connection: null, issue };
@@ -350,14 +350,14 @@ function launchLocalServer(baseUrl: string): LaunchedServer {
   const serverDir = path.join(resolveRepoRoot(), "server");
   if (!existsSync(path.join(serverDir, "app", "main.py"))) {
     throw new Error(
-      `Local server source was not found at ${serverDir}. Set SMITH_SERVER_URL to a running server or SMITH_REPO_ROOT to the Agent-Smith checkout.`,
+      `Local server source was not found at ${serverDir}. Set HELVE_SERVER_URL to a running server or HELVE_REPO_ROOT to the Helve checkout.`,
     );
   }
 
   // A per-launch identity so the health probe can distinguish the server we
   // spawned from a foreign one that won the same port in a near-simultaneous
   // startup race (two shells, empty port, both spawn uvicorn — one loses the
-  // bind and dies).  The server echoes SMITH_SERVER_NONCE from /api/health.
+  // bind and dies).  The server echoes HELVE_SERVER_NONCE from /api/health.
   const nonce = randomUUID();
   const child = spawn("uv", ["run", "uvicorn", "app.main:app", "--port", port], {
     cwd: serverDir,
@@ -370,7 +370,7 @@ function launchLocalServer(baseUrl: string): LaunchedServer {
     // message left the user with "exited before becoming healthy" and no way to
     // diagnose it. Bounded so a chatty server cannot grow this without limit.
     stdio: ["ignore", "ignore", "pipe"],
-    env: { ...process.env, PYTHONUNBUFFERED: "1", SMITH_SERVER_NONCE: nonce },
+    env: { ...process.env, PYTHONUNBUFFERED: "1", HELVE_SERVER_NONCE: nonce },
   });
   let spawnError: Error | undefined;
   child.once("error", (error) => {
@@ -456,7 +456,7 @@ export async function ensureLocalServer(): Promise<ServerConnection> {
   assertSafeServerTarget(target);
   const existing = await inspectExistingServer(target);
   if (existing.connection) return existing.connection;
-  if (target.envOverride) throw new Error(`Configured SMITH_SERVER_URL is unreachable: ${target.baseUrl}`);
+  if (target.envOverride) throw new Error(`Configured HELVE_SERVER_URL is unreachable: ${target.baseUrl}`);
 
   const baseUrl = await launchUrl(target, existing.healthy);
   const launch = launchLocalServer(baseUrl);

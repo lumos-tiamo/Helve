@@ -27,7 +27,7 @@ from app.services.token_stats_service import TokenStatsService  # noqa: E402
 
 @asynccontextmanager
 async def _unused_backfill_connection():
-    """Keep lifespan tests off the real ``~/.agent-smith`` database.
+    """Keep lifespan tests off the real ``~/.helve`` database.
 
     ``_sync_token_stats`` opens a connection of its own before it reaches the
     service, so a test that only fakes the service would still touch the user's
@@ -294,8 +294,8 @@ def test_startup_reconciliation_does_not_resurrect_pruned_runs(
     """
     paths = AppPaths(data_dir=tmp_path / "data", project_root=tmp_path / "project")
     main.common_config.reset_paths(paths)
-    previous_limit = os.environ.get("AGENT_SMITH_OBSERVABILITY_MAX_RUNS")
-    os.environ["AGENT_SMITH_OBSERVABILITY_MAX_RUNS"] = "2"
+    previous_limit = os.environ.get("HELVE_OBSERVABILITY_MAX_RUNS")
+    os.environ["HELVE_OBSERVABILITY_MAX_RUNS"] = "2"
     try:
         store = RunStateStore(paths.agent_dir)
         for run_id in ("run-1", "run-2", "run-3"):
@@ -331,9 +331,9 @@ def test_startup_reconciliation_does_not_resurrect_pruned_runs(
         assert after == survivors
     finally:
         if previous_limit is None:
-            os.environ.pop("AGENT_SMITH_OBSERVABILITY_MAX_RUNS", None)
+            os.environ.pop("HELVE_OBSERVABILITY_MAX_RUNS", None)
         else:
-            os.environ["AGENT_SMITH_OBSERVABILITY_MAX_RUNS"] = previous_limit
+            os.environ["HELVE_OBSERVABILITY_MAX_RUNS"] = previous_limit
         main.common_config.reset_paths()
 
 

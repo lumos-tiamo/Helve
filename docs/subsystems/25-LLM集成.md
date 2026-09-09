@@ -54,7 +54,7 @@ flowchart TD
 # (path + mtime + size).  Config resolution runs on every model route lookup,
 # so re-reading unchanged YAML files on each call is wasted disk I/O; edits to
 # any level are still picked up because the fingerprint changes.  Environment
-# overrides (AGENTSMITH_LLM_*) are the lowest-precedence layer and are part of
+# overrides (HELVE_LLM_*) are the lowest-precedence layer and are part of
 # the fingerprint so a change invalidates the cache.
 ```
 
@@ -64,10 +64,10 @@ flowchart TD
 
 ```python
 _ENV_LLM_KEYS = (
-    ("AGENTSMITH_LLM_API_KEY", "api_key"),
-    ("AGENTSMITH_LLM_BASE_URL", "base_url"),
-    ("AGENTSMITH_LLM_MODEL", "model"),
-    ("AGENTSMITH_LLM_PROVIDER", "provider"),
+    ("HELVE_LLM_API_KEY", "api_key"),
+    ("HELVE_LLM_BASE_URL", "base_url"),
+    ("HELVE_LLM_MODEL", "model"),
+    ("HELVE_LLM_PROVIDER", "provider"),
 )
 ```
 
@@ -175,7 +175,7 @@ DNS 暂时不可用、或者主机名确实不存在——这时拒绝会让一�
 # (path + mtime + size).  Config resolution runs on every model route lookup,
 # so re-reading unchanged YAML files on each call is wasted disk I/O; edits to
 # any level are still picked up because the fingerprint changes.  Environment
-# overrides (AGENTSMITH_LLM_*) are the lowest-precedence layer and are part of
+# overrides (HELVE_LLM_*) are the lowest-precedence layer and are part of
 # the fingerprint so a change invalidates the cache.
 ```
 
@@ -187,7 +187,7 @@ DNS 暂时不可用、或者主机名确实不存在——这时拒绝会让一�
 |---|---|
 | 文件没变 | 直接用缓存，零磁盘 I/O |
 | 改了任一层 YAML | mtime 变 → 指纹变 → 缓存失效 → 重新合并 |
-| 改了 `AGENTSMITH_LLM_*` | 环境变量在指纹里 → 同样失效 |
+| 改了 `HELVE_LLM_*` | 环境变量在指纹里 → 同样失效 |
 | 不需要手动清缓存 | 没有 `reload()` 这类 API，也就不存在忘记调用的问题 |
 
 用 mtime + size 而不是内容哈希，是因为读内容算哈希就已经付出了想省掉的那次 I/O。这个组合会漏掉"同一秒内改动且大小不变"的极端情况，但对配置文件来说这个概率可以忽略——而且 `stat` 比 `read` 便宜一个数量级。
@@ -784,7 +784,7 @@ set_default_generation_sink(TokenStatsService().record_generation)
 `engine/llm/replay.py`（337 行）。`engine_runtime.py` 的 `_maybe_record()` 是入口：
 
 ```python
-"""Set ``AGENT_SMITH_RECORD_LLM=/path/to/case.jsonl`` and every model turn of
+"""Set ``HELVE_RECORD_LLM=/path/to/case.jsonl`` and every model turn of
 every subsequent run appends there, ready to replay via engine.llm.replay.
 Only the *responses* are written, never the prompt — so a recording cannot
 leak conversation content, and replay does not need it (turns are served in
@@ -1239,7 +1239,7 @@ flowchart TD
 
 理由是**错误路径比正常路径更难补**。正常响应的解析写错了，第一次调用就会暴露；而"内容开始后仍在重试"这类问题只在特定的失败时序下出现，可能上线几周才遇到一次，且现场难以复现。先把失败分类跑对，后面加功能都是在一个可靠的基础上。
 
-对接完成后，用 `AGENT_SMITH_RECORD_LLM` 录一份真实交互（§12），它会成为这个 provider 的回归基线——比手写 mock 更接近真实，也不会因为你对 provider 行为的理解有偏差而写出一份错误的期望。
+对接完成后，用 `HELVE_RECORD_LLM` 录一份真实交互（§12），它会成为这个 provider 的回归基线——比手写 mock 更接近真实，也不会因为你对 provider 行为的理解有偏差而写出一份错误的期望。
 
 最后一条提醒：**不要为新 provider 新增配置字段**。五层合并（§2.1）和 `config_fields.py` 的一处声明六处派生（§2.2）意味着加一个字段要同步六个地方，而绝大多数 provider 差异都能用现有字段表达——端点形状的差异属于适配器，不属于配置。真的需要新字段时，先确认它描述的是**用户要做的选择**，而不是**适配器应该自己知道的事实**。
 

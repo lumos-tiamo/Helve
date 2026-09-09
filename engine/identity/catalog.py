@@ -19,7 +19,12 @@ from common.yaml_utils import YamlConfigError, load_yaml
 _LATIN_KEYWORD_RE = re.compile(r"^[a-z0-9][a-z0-9 _-]*$")
 
 
-IDENTITY_SCHEMA = "agentsmith.identity/v1"
+IDENTITY_SCHEMA = "helve.identity/v1"
+# The pre-rename name stays accepted: identity documents are user-authored
+# content living outside this repository, and a rename that rejects them
+# turns a cosmetic change into a broken install.
+LEGACY_IDENTITY_SCHEMA = "agentsmith.identity/v1"
+ACCEPTED_IDENTITY_SCHEMAS = (IDENTITY_SCHEMA, LEGACY_IDENTITY_SCHEMA)
 
 
 class IdentityCatalogError(ValueError):
@@ -152,7 +157,7 @@ def _parse_identity(path: Path) -> IdentitySpec:
     if unknown:
         raise IdentityCatalogError(f"Identity document {path} has unknown fields: {', '.join(sorted(unknown))}")
     schema = _non_empty_string(raw.get("schema"), f"Identity document {path}.schema")
-    if schema != IDENTITY_SCHEMA:
+    if schema not in ACCEPTED_IDENTITY_SCHEMAS:
         raise IdentityCatalogError(f"Identity document {path} must use schema {IDENTITY_SCHEMA!r}")
     identity_id = _non_empty_string(raw.get("id"), f"Identity document {path}.id")
     name = _non_empty_string(raw.get("name"), f"Identity document {path}.name")

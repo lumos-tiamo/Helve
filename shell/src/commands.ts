@@ -25,8 +25,8 @@ type CommandHandler = (args: string[], context: CommandContext) => Promise<void>
 const HELP_TEXT = [
   "- `/help` — show this list",
   "- `/new` — start a fresh session and keep the current session in history",
-  "- `/reload` — start fresh after changing SMITH.md or other context files",
-  "- `/init` — create a project .smith/SMITH.md instruction template",
+  "- `/reload` — start fresh after changing HELVE.md or other context files",
+  "- `/init` — create a project .helve/HELVE.md instruction template",
   "- `/clear` — delete the current session and start fresh",
   "- `/compress` — summarize and persist the active session context",
   "- `/model` — discover relay models and configure the primary or review model",

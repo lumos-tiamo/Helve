@@ -10,7 +10,7 @@ from engine.identity import IdentityCatalog
 def _catalog(tmp_path: Path) -> IdentityCatalog:
     (tmp_path / "smith.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true

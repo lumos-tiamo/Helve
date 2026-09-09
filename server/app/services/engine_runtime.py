@@ -37,7 +37,7 @@ def _normalize_llm_config(config: dict[str, Any]) -> dict[str, Any]:
 def _recording_path(usage: LLMUsage | None) -> Path | None:
     """Resolve one route's JSONL recording target, or ``None`` when off (opt-in).
 
-    Set ``AGENT_SMITH_RECORD_LLM=/path/to/case.jsonl`` and every model turn of
+    Set ``HELVE_RECORD_LLM=/path/to/case.jsonl`` and every model turn of
     every subsequent run appends there, ready to replay via
     :mod:`engine.llm.replay`.
     Only the *responses* are written, never the prompt — so a recording cannot
@@ -52,7 +52,7 @@ def _recording_path(usage: LLMUsage | None) -> Path | None:
     keeps the bare env-var path so recordings made before the split, and the
     tooling that points at them, still replay unchanged.
     """
-    target = os.environ.get("AGENT_SMITH_RECORD_LLM", "").strip()
+    target = os.environ.get("HELVE_RECORD_LLM", "").strip()
     if not target:
         return None
     path = Path(target).expanduser()

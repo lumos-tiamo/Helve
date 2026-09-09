@@ -438,8 +438,8 @@ def test_observability_retention_keeps_the_newest_oversized_run(
 def test_observability_retention_environment_only_uses_zero_to_disable(
     monkeypatch,
 ) -> None:
-    monkeypatch.setenv("AGENT_SMITH_OBSERVABILITY_MAX_RUNS", "-1")
-    monkeypatch.setenv("AGENT_SMITH_OBSERVABILITY_MAX_AGE_DAYS", "0")
+    monkeypatch.setenv("HELVE_OBSERVABILITY_MAX_RUNS", "-1")
+    monkeypatch.setenv("HELVE_OBSERVABILITY_MAX_AGE_DAYS", "0")
 
     policy = ObservabilityRetentionPolicy.from_environment()
 

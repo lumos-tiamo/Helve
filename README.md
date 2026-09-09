@@ -1,6 +1,8 @@
-# openSmith
+<img src="brand/helve-lockup.svg" alt="Helve" width="184">
 
 > A local-first, terminal-native agent workbench.
+>
+> *helve* /helv/ — the handle of a hammer: the part the human holds.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
@@ -26,9 +28,9 @@ configure.
 
 Multi-agent frameworks spend their complexity budget on orchestration —
 delegation, hand-off protocols, shared scratchpads, and the failure modes each of
-those introduces. openSmith spends it on the single agent instead:
+those introduces. Helve spends it on the single agent instead:
 
-| Concern | How openSmith handles it |
+| Concern | How Helve handles it |
 |---|---|
 | Different task types | **Skills** — a task-specific workflow loaded into the prompt, not a separate agent |
 | Multi-step work | **Skill chains** — declared pipelines with gates between stages |
@@ -40,7 +42,7 @@ those introduces. openSmith spends it on the single agent instead:
 
 ## What It Does
 
-- **Interactive terminal** — a single rich Ink shell, launched with `smith` from any project directory
+- **Interactive terminal** — a single rich Ink shell, launched with `helve` from any project directory
 - **Skill-based workflows** — debug, plan, review, or reply directly, chosen per task
 - **Skill chains** — requirements research, TDD development, and code review run as gated pipelines
 - **Real tools** — file I/O, shell, Git, web search, and MCP servers, each behind permission levels
@@ -64,24 +66,24 @@ those introduces. openSmith spends it on the single agent instead:
 # Backend
 cd server && uv sync
 
-# Terminal shell — build, then link `smith` onto your PATH
+# Terminal shell — build, then link `helve` onto your PATH
 cd ../shell && npm ci && npm run build && npm link
 ```
 
-If an older release left a `smith` from `uv tool install`, remove it first — it
+If an older release left a `smith` or `helve` from `uv tool install`, remove it first — it
 points at the deleted Python CLI and shadows the shell entry point:
 
 ```bash
-uv tool uninstall agent-smith-server
+uv tool uninstall helve-server
 ```
 
-`npm link` symlinks the global `smith` to this working copy rather than copying
-it, so `smith` works from any directory and finds `server/` through its own
+`npm link` symlinks the global `helve` to this working copy rather than copying
+it, so `helve` works from any directory and finds `server/` through its own
 install path. The trade-off: it breaks if the repository moves, and it picks up
 source edits only after `npm run build`. Verify with:
 
 ```bash
-ls -l "$(which smith)"   # → .../lib/node_modules/smith-shell/bin/smith.js
+ls -l "$(which helve)"   # → .../lib/node_modules/helve-shell/bin/helve.js
 ```
 
 ### Configure
@@ -89,13 +91,13 @@ ls -l "$(which smith)"   # → .../lib/node_modules/smith-shell/bin/smith.js
 Set your LLM provider through environment variables:
 
 ```bash
-export AGENTSMITH_LLM_PROVIDER=openai          # openai / anthropic
-export AGENTSMITH_LLM_API_KEY="sk-..."
-export AGENTSMITH_LLM_BASE_URL="https://api.openai.com/v1"
-export AGENTSMITH_LLM_MODEL="your-model"
+export HELVE_LLM_PROVIDER=openai          # openai / anthropic
+export HELVE_LLM_API_KEY="sk-..."
+export HELVE_LLM_BASE_URL="https://api.openai.com/v1"
+export HELVE_LLM_MODEL="your-model"
 ```
 
-Or write `~/.agent-smith/config.yaml`:
+Or write `~/.helve/config.yaml`:
 
 ```yaml
 llm:
@@ -109,13 +111,13 @@ llm:
 
 ```bash
 # From any project directory — the backend starts automatically
-smith
+helve
 ```
 
 ### Context Files
 
-`~/.agent-smith/SMITH.md` is your user-wide instruction file: it applies to every
-run. A repository's own `.smith/SMITH.md` holds rules that belong to that project
+`~/.helve/HELVE.md` is your user-wide instruction file: it applies to every
+run. A repository's own `.helve/HELVE.md` holds rules that belong to that project
 only. Both are read while a run is assembled, so edits take effect on the next
 request without restarting the backend.
 
@@ -159,7 +161,7 @@ runtime, so its contract is file shape, not Python types.
 ## Repository Layout
 
 ```
-openSmith/
+Helve/
 ├── agents/                     # Content layer — loaded at runtime, never imported
 │   ├── conditions/             #   Predicates deciding whether a pipeline node runs
 │   ├── gates/                  #   Stage contracts: what a node must produce to advance
@@ -176,7 +178,7 @@ openSmith/
 │   ├── config.py               #   Configuration loading
 │   ├── database.py             #   SQLite connection management
 │   ├── hash_chain.py           #   Tamper-evident audit log chain
-│   ├── paths.py                #   Single source of truth for the data root (~/.agent-smith)
+│   ├── paths.py                #   Single source of truth for the data root (~/.helve)
 │   ├── yaml_utils.py           #   Safe YAML read/write
 │   └── pyproject.toml
 │
@@ -213,7 +215,7 @@ openSmith/
 │   └── pyproject.toml
 │
 ├── shell/                      # Terminal UI — Ink / React
-│   ├── bin/smith.js            #   CLI entry point
+│   ├── bin/helve.js            #   CLI entry point
 │   ├── src/                    #   Components, transcript rendering, API bridge
 │   ├── scripts/                #   Test runner
 │   ├── biome.json              #   Lint and format configuration

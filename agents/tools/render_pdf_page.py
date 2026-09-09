@@ -111,7 +111,7 @@ def _render_output_dir() -> Path:
 
 
 def _find_pdftoppm() -> str | None:
-    configured = os.environ.get("SMITH_PDFTOPPM", "").strip()
+    configured = os.environ.get("HELVE_PDFTOPPM", "").strip()
     if configured and os.path.isfile(configured) and os.access(configured, os.X_OK):
         return configured
     return shutil.which("pdftoppm")
@@ -131,7 +131,7 @@ def _execute_sync(*, path: str, page: int = 1, dpi: int = 144) -> str:
     if executable is None:
         return (
             "Error: Poppler pdftoppm is not available. Install Poppler or set "
-            "SMITH_PDFTOPPM to the pdftoppm executable."
+            "HELVE_PDFTOPPM to the pdftoppm executable."
         )
 
     output_dir = _render_output_dir()

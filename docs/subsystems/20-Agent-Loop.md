@@ -1,12 +1,12 @@
-# Agent-Smith Agent Loop — 运行机制说明
+# Helve Agent Loop — 运行机制说明
 
-> 本文面向需要理解或改造 Agent-Smith 执行内核的开发者，说明一次用户输入如何变成一条事件流：谁做路由、谁跑循环、循环在什么条件下停、停下来时留下了什么。内容以 `engine/` 代码为准，不以旧版设计稿为准。
+> 本文面向需要理解或改造 Helve 执行内核的开发者，说明一次用户输入如何变成一条事件流：谁做路由、谁跑循环、循环在什么条件下停、停下来时留下了什么。内容以 `engine/` 代码为准，不以旧版设计稿为准。
 
 ---
 
 ## 一、一句话结论
 
-Agent-Smith 的 Agent Loop 不是"一个 while 循环调 LLM"，而是**一条带预算、带终态、带补偿语义的事件流水线**：
+Helve 的 Agent Loop 不是"一个 while 循环调 LLM"，而是**一条带预算、带终态、带补偿语义的事件流水线**：
 
 ```
 一次用户输入 ──▶ 一个 run ──▶ 一串 ExecutionEvent ──▶ 一个确定的终态
@@ -26,7 +26,7 @@ Agent-Smith 的 Agent Loop 不是"一个 while 循环调 LLM"，而是**一条�
 | **直接 ReAct** | `route.pipeline_id is None` | `react_event_loop` | 默认路径，绝大多数请求走这里 |
 | **管线** | 路由命中声明式 pipeline | `run_pipeline` | 多节点串行，每节点带门禁 |
 
-一个例外值得记住：`grill-me` 虽然形式上是 forced skill，但会被识别为 `requirements-research` 管线的入口而不是一次性技能调用（`grill_me_chain_entry`）。上游 skill 的语义是"一次访谈"，而在 Agent-Smith 里它是整条需求链的第一站。
+一个例外值得记住：`grill-me` 虽然形式上是 forced skill，但会被识别为 `requirements-research` 管线的入口而不是一次性技能调用（`grill_me_chain_entry`）。上游 skill 的语义是"一次访谈"，而在 Helve 里它是整条需求链的第一站。
 
 **路由是纯词法的。** `IdentityCatalog` 按关键词 / 示例 / 优先级匹配，没有 LLM 兜底分类器。历史上存在过一个：它在每次关键词未命中时都要跑一遍，拖慢了普通 ReAct 回合，还可能启动用户根本没要求的多步工作流。现在的规则是——**管线必须由明确声明的高置信意图触发**，路由无法凭空发明身份、领域或管线。
 
@@ -126,7 +126,7 @@ Agent-Smith 的 Agent Loop 不是"一个 while 循环调 LLM"，而是**一条�
 
 流式输出有个固有矛盾：文本已经打到用户屏幕上了，但这一轮**还没决定它算不算答复**。模型可能接着发起工具调用（那这段就是前言，不是答复），也可能撞上内容过滤、上下文超限、门禁驳回。
 
-Agent-Smith 的处理方式是给每段流式草稿分配 `provision_id`，然后显式结算：
+Helve 的处理方式是给每段流式草稿分配 `provision_id`，然后显式结算：
 
 ```
 PROVISIONAL_TEXT_DELTA(id, text)   草稿正在流出
@@ -216,7 +216,7 @@ QUEUED ──▶ RUNNING ──┬──▶ COMPLETED
 | `PostToolHook` | 工具执行后 | ❌ 不能 | `list[str]` 警告，注入为 system 消息 |
 | `StopHook` | 每次响应结束 | ❌ 不能 | 无（通常异步） |
 
-内置四个（`agents/smith/hooks/`）：`config-protection`（Pre，拦 linter/formatter 配置改动）、`console-warn`（Post）、`quality-gate`（Post，异步跑格式/lint）、`cost-tracker`（Stop，写 `~/.agent-smith/metrics/costs.jsonl`）。
+内置四个（`agents/smith/hooks/`）：`config-protection`（Pre，拦 linter/formatter 配置改动）、`console-warn`（Post）、`quality-gate`（Post，异步跑格式/lint）、`cost-tracker`（Stop，写 `~/.helve/metrics/costs.jsonl`）。
 
 > PreHook 阻断路径上有一条**必须**做的事：补一条配对的 `tool` 结果消息。每个 `assistant.tool_calls` 条目都必须有配对结果，否则下一次请求整个被 provider 拒收。这条分支曾是循环里唯一漏掉配对的阻断路径，而 `config-protection` 是默认开启的——编辑 `pyproject.toml` 就会走到这里。
 
@@ -255,8 +255,8 @@ continue —— 重跑同一轮
 | run 索引 | SQLite（`ObservabilityIndex`），带保留策略 |
 | run 摘要 | `RunSummaryStore` |
 | 提示词溯源 | `prompt_manifest`（16 层的 source / authority / trust / hash） |
-| 工具审批审计 | `~/.agent-smith/audit.jsonl`（哈希链 + `.head` 锚点） |
-| 成本 | `~/.agent-smith/metrics/costs.jsonl` |
+| 工具审批审计 | `~/.helve/audit.jsonl`（哈希链 + `.head` 锚点） |
+| 成本 | `~/.helve/metrics/costs.jsonl` |
 | 异常 | `IncidentDetector` 从 trace 派生 |
 
 trace 持久化是**刻意的 best-effort**：本地 trace 不可用绝不能把一次本来有效的 Agent run 变成失败执行。

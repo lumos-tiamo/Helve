@@ -589,7 +589,7 @@ def build_approval_presentation(
 
 APPROVAL_BROKER = ApprovalBroker()
 _CURRENT_APPROVAL_CONTEXT: ContextVar[tuple[ApprovalBroker, str] | None] = ContextVar(
-    "agent_smith_approval_context",
+    "helve_approval_context",
     default=None,
 )
 

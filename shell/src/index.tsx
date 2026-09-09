@@ -65,7 +65,7 @@ import {
 import { type AppStore, createAppStore } from "./store.js";
 import { clearTerminal } from "./term.js";
 import { truncateDisplay } from "./text-layout.js";
-import { GHOST_BUDDY, HERO_HINTS, SMITH_LOGO } from "./presentation.js";
+import { HELVE_MARK, HERO_HINTS, HELVE_LOGO } from "./presentation.js";
 import { ACCENT, BORDER, ERROR, INFO, MUTED, SELECTED_BACKGROUND, SELECTED_FOREGROUND, WARNING } from "./theme.js";
 import { TokenStatsPanel } from "./token-panel.js";
 import { TranscriptEntryView } from "./transcript.js";
@@ -73,7 +73,7 @@ import { splitTranscript, type TranscriptEntry, type TranscriptViewMode } from "
 import { useWindowSize } from "./window-size.js";
 
 const SHELL_VERSION = (createRequire(import.meta.url)("../package.json") as { version: string }).version;
-const PROJECT_CWD = path.resolve(process.env.SMITH_PROJECT_CWD?.trim() || process.cwd());
+const PROJECT_CWD = path.resolve(process.env.HELVE_PROJECT_CWD?.trim() || process.cwd());
 
 
 const store = createAppStore(loadHistory());
@@ -110,7 +110,7 @@ function HeroPanel() {
     return (
       <Box flexDirection="column" marginBottom={1} paddingTop={1}>
         <Box gap={1} marginBottom={1}>
-          <Text color={ACCENT}>Agent-Smith</Text>
+          <Text color={ACCENT}>Helve</Text>
           <Text color={MUTED}>v{SHELL_VERSION}</Text>
         </Box>
         <Text color={INFO}>Terminal view is compact. Type `/help` for commands.</Text>
@@ -125,19 +125,19 @@ function HeroPanel() {
       <Box flexDirection={wide ? "row" : "column"} gap={wide ? 5 : 1}>
         <Box flexDirection="column">
           <Box gap={1}>
-            <Text color={ACCENT}>Agent-Smith</Text>
+            <Text color={ACCENT}>Helve</Text>
             <Text color={MUTED}>v{SHELL_VERSION}</Text>
           </Box>
           <Box gap={3} marginTop={1}>
             <Box flexDirection="column">
-              {SMITH_LOGO.map((line) => (
+              {HELVE_LOGO.map((line) => (
                 <Text color={ACCENT} key={line}>
                   {line}
                 </Text>
               ))}
             </Box>
             <Box flexDirection="column" justifyContent="center">
-              {GHOST_BUDDY.map((line) => (
+              {HELVE_MARK.map((line) => (
                 <Text color={ACCENT} key={line}>
                   {line}
                 </Text>

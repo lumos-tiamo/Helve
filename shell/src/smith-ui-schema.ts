@@ -307,7 +307,7 @@ function validateStaticTree(spec: Record<string, unknown>): SmithUiSpec | null {
 
 function localProjectImagePath(value: unknown): string | null {
   if (typeof value !== "string" || !value || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return null;
-  const projectRoot = path.resolve(process.env.SMITH_PROJECT_CWD?.trim() || process.cwd());
+  const projectRoot = path.resolve(process.env.HELVE_PROJECT_CWD?.trim() || process.cwd());
   const resolved = path.resolve(projectRoot, value);
   if (resolved !== projectRoot && !resolved.startsWith(`${projectRoot}${path.sep}`)) return null;
   const extension = path.extname(resolved).toLowerCase();

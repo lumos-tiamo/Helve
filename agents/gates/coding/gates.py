@@ -515,7 +515,7 @@ class PlanConfirmedGate:
 class RedLoopGate:
     """A bug handoff must prove a runnable, symptom-specific RED loop."""
 
-    _READY = "<!-- agent-smith:red-loop-ready -->"
+    _READY = "<!-- helve:red-loop-ready -->"
     _COMMAND = re.compile(
         r"(?:^|\n)\s*(?:\$\s*)?(?:uv\s+run|pytest|python(?:3)?\s|npm\s+test|pnpm\s+test|yarn\s+test|"
         r"bun\s+test|go\s+test|cargo\s+test|curl\s|playwright\s)",
@@ -538,7 +538,7 @@ class RedLoopGate:
             f"Bug diagnosis missing: {', '.join(missing)}.",
             retry_hint=(
                 "Run and report one deterministic command that exercises the user's exact symptom, "
-                "including its observed failure, then end with <!-- agent-smith:red-loop-ready -->."
+                "including its observed failure, then end with <!-- helve:red-loop-ready -->."
             ),
         )
 
@@ -583,7 +583,7 @@ class TddVerificationGate:
                 retry_hint=(
                     "Return one consolidated TddEvidence with a VERIFICATION REPORT. Every phase must "
                     "be PASS, FAIL, or NOT_APPLICABLE with a reason, then end with "
-                    "<!-- agent-smith:tdd-evidence-ready -->."
+                    "<!-- helve:tdd-evidence-ready -->."
                 ),
             )
         return GateResult("pass", "TddEvidence includes a complete verification report.")
@@ -607,7 +607,7 @@ class ReviewReportGate:
                 f"ReviewReport missing: {', '.join(missing)}.",
                 retry_hint=(
                     "Resolve and report the fixed point, keep ## Standards and ## Spec separate, "
-                    "then end with <!-- agent-smith:review-ready -->."
+                    "then end with <!-- helve:review-ready -->."
                 ),
             )
         return GateResult("pass", "Two-axis ReviewReport is complete.")
@@ -630,7 +630,7 @@ class ReviewVerificationGate:
                 f"Verified ReviewReport missing: {', '.join(missing)}.",
                 retry_hint=(
                     "Preserve the independent ## Standards and ## Spec sections, append ## Verification "
-                    "with actual command results, and end with <!-- agent-smith:review-report-ready -->."
+                    "with actual command results, and end with <!-- helve:review-report-ready -->."
                 ),
             )
         return GateResult("pass", "ReviewReport preserves both axes and verification evidence.")

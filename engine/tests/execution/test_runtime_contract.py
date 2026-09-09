@@ -255,9 +255,9 @@ class CodingPipelineLLM(FakeLLM):
         super().__init__()
         self.tool_sets: list[set[str]] = []
         self.responses = [
-            "## Red-Capable Feedback Loop\n$ pytest tests/test_auth.py\n1 failed: login rejects a valid legacy token.\nThis command exercises the reported login path deterministically.\n<!-- agent-smith:red-loop-ready -->",
-            "# TddEvidence\n## RED\n$ pytest tests/test_auth.py\n1 failed: login rejects a valid legacy token.\n## GREEN\n$ pytest tests/test_auth.py\n1 passed, 0 failed.\nChanged regression coverage in tests/test_auth.py; residual risk: old-token migration fixture coverage.\n<!-- agent-smith:tdd-implementation-ready -->",
-            "# TddEvidence\nVERIFICATION REPORT\nBuild: NOT_APPLICABLE (Python package has no build step)\nTypes: NOT_APPLICABLE (no configured type checker)\nLint: NOT_APPLICABLE (no configured linter)\nTests: PASS (1 passed, 0 failed)\nSecurity: PASS (no secrets found in changed files)\nDiff: PASS (1 intended file changed)\nOverall: READY\n<!-- agent-smith:tdd-evidence-ready -->",
+            "## Red-Capable Feedback Loop\n$ pytest tests/test_auth.py\n1 failed: login rejects a valid legacy token.\nThis command exercises the reported login path deterministically.\n<!-- helve:red-loop-ready -->",
+            "# TddEvidence\n## RED\n$ pytest tests/test_auth.py\n1 failed: login rejects a valid legacy token.\n## GREEN\n$ pytest tests/test_auth.py\n1 passed, 0 failed.\nChanged regression coverage in tests/test_auth.py; residual risk: old-token migration fixture coverage.\n<!-- helve:tdd-implementation-ready -->",
+            "# TddEvidence\nVERIFICATION REPORT\nBuild: NOT_APPLICABLE (Python package has no build step)\nTypes: NOT_APPLICABLE (no configured type checker)\nLint: NOT_APPLICABLE (no configured linter)\nTests: PASS (1 passed, 0 failed)\nSecurity: PASS (no secrets found in changed files)\nDiff: PASS (1 intended file changed)\nOverall: READY\n<!-- helve:tdd-evidence-ready -->",
         ]
 
     async def chat(
@@ -282,11 +282,11 @@ class RequirementsPipelineLLM(FakeLLM):
             "Scope: export a CSV report; non-goal: scheduling. "
             "Constraints: preserve the existing export API. "
             "Acceptance signal: an exported file has the selected columns.\n"
-            "<!-- agent-smith:grilling-complete -->",
+            "<!-- helve:grilling-complete -->",
             "ResearchBrief: docs/research/csv-export.md\n"
-            "<!-- agent-smith:research-brief-ready -->",
+            "<!-- helve:research-brief-ready -->",
             "The user has explicitly confirmed the scoped plan.\n"
-            "<!-- agent-smith:plan-confirmed -->",
+            "<!-- helve:plan-confirmed -->",
         ]
 
     async def chat(
@@ -311,12 +311,12 @@ class ReviewPipelineLLM(FakeLLM):
             "## Standards\nNo standards violation found.\n\n"
             "## Spec\nno spec available\n\n"
             "Fixed point: git diff main...HEAD\n"
-            "<!-- agent-smith:review-ready -->",
+            "<!-- helve:review-ready -->",
             "## Standards\nNo standards violation found.\n\n"
             "## Spec\nno spec available\n\n"
             "## Verification\nTests: PASS (targeted suite passed)\n"
             "Overall: READY\n"
-            "<!-- agent-smith:review-report-ready -->",
+            "<!-- helve:review-report-ready -->",
         ]
 
     async def chat(
@@ -356,7 +356,7 @@ def _runtime(tmp_path: Path) -> tuple[RuntimeContext, RuntimeServices, FakeLLM]:
     identities_dir.mkdir()
     (identities_dir / "smith.yaml").write_text(
         """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true
@@ -2048,7 +2048,7 @@ def test_prepare_runtime_resolves_a_yaml_route_to_its_pipeline(tmp_path: Path) -
         identities_dir = runtime.agents_dir / "identities"
         (identities_dir / "smith.yaml").write_text(
             """
-schema: agentsmith.identity/v1
+schema: helve.identity/v1
 id: smith
 name: Smith
 default: true

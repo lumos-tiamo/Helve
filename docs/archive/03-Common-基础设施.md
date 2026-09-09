@@ -12,7 +12,7 @@
 
 ## 1. 模块定位与设计原则
 
-`common/` 是 Agent-Smith 四层架构的最底层基础设施。它的职责是为上层提供：
+`common/` 是 Helve 四层架构的最底层基础设施。它的职责是为上层提供：
 
 - **路径管理** — 项目根目录和数据目录的定位与路径派生
 - **配置常量** — 上层模块所需的全局路径常量
@@ -62,7 +62,7 @@ common/
 
 | 常量 | 值 | 含义 |
 |------|-----|------|
-| `PROJECT_ROOT_ENV` | `"AGENT_SMITH_PROJECT_ROOT"` | 环境变量名，用于显式指定项目根目录 |
+| `PROJECT_ROOT_ENV` | `"HELVE_PROJECT_ROOT"` | 环境变量名，用于显式指定项目根目录 |
 | `PRIVATE_DIR_MODE` | `0o700` | 目录权限模式。Owner 可读/可写/可执行，其他用户无任何权限 |
 | `PRIVATE_FILE_MODE` | `0o600` | 私有文件权限。Owner 可读/可写，其他用户无任何权限 |
 
@@ -76,7 +76,7 @@ common/
 configured_root = os.environ.get(PROJECT_ROOT_ENV)
 ```
 
-若设置了 `AGENT_SMITH_PROJECT_ROOT` 环境变量：
+若设置了 `HELVE_PROJECT_ROOT` 环境变量：
 1. 对路径做 `expanduser()` + `resolve()` 得到绝对路径
 2. 校验该路径具备 Smith 标记：`agents/smith/config.yaml`、`agents/identities/smith.yaml` 和至少一个 `agents/skills/*/SKILL.md`，否则抛出 `RuntimeError`
 3. 校验通过则返回该路径
@@ -102,15 +102,15 @@ working_dir = Path.cwd().resolve()
 for candidate in (working_dir, *working_dir.parents):
     if not (candidate / "agents").is_dir():
         continue
-    if _is_agent_smith_root(candidate):
+    if _is_helve_root(candidate):
         return candidate
 ```
 
-从当前工作目录开始逐级向父目录搜索，找到第一个具备全部 Smith 标记（`_is_agent_smith_root()`）的目录即返回。单独存在通用的 `agents/` 目录不会命中，避免误将其他项目当作 Smith 根目录；命中 `agents/` 但缺标记的候选会记 debug 日志，便于诊断根目录发现失配。
+从当前工作目录开始逐级向父目录搜索，找到第一个具备全部 Smith 标记（`_is_helve_root()`）的目录即返回。单独存在通用的 `agents/` 目录不会命中，避免误将其他项目当作 Smith 根目录；命中 `agents/` 但缺标记的候选会记 debug 日志，便于诊断根目录发现失配。
 
 **兜底**
 
-如果三层策略全部未命中，抛出 `RuntimeError` 并提示设置 `AGENT_SMITH_PROJECT_ROOT`。这尤其适用于只安装了 `common` wheel 的场景：该 wheel 只携带内置技能 data files，不携带完整的 `agents/` 运行时资产，不能把 `site-packages` 当作项目根目录。
+如果三层策略全部未命中，抛出 `RuntimeError` 并提示设置 `HELVE_PROJECT_ROOT`。这尤其适用于只安装了 `common` wheel 的场景：该 wheel 只携带内置技能 data files，不携带完整的 `agents/` 运行时资产，不能把 `site-packages` 当作项目根目录。
 
 ### 3.3 `_ensure_private_dir(path: Path) -> None`
 
@@ -148,12 +148,12 @@ class AppPaths:
 @classmethod
 def defaults(cls) -> AppPaths:
     return cls(
-        data_dir=Path.home() / ".agent-smith",
+        data_dir=Path.home() / ".helve",
         project_root=_default_project_root(),
     )
 ```
 
-- `data_dir` 固定为 `~/.agent-smith/`
+- `data_dir` 固定为 `~/.helve/`
 - `project_root` 通过 `_default_project_root()` 三级回退策略确定
 
 #### 3.4.2 派生路径属性
@@ -162,12 +162,12 @@ def defaults(cls) -> AppPaths:
 
 | 属性 | 基于 | 返回路径 | 用途 |
 |------|------|---------|------|
-| `agent_dir` | `data_dir` | `~/.agent-smith/agent/` | Smith Agent 实例数据目录 |
-| `sqlite_path` | `data_dir` | `~/.agent-smith/sqlite/agent-smith.sqlite` | SQLite 数据库文件路径 |
+| `agent_dir` | `data_dir` | `~/.helve/agent/` | Smith Agent 实例数据目录 |
+| `sqlite_path` | `data_dir` | `~/.helve/sqlite/helve.sqlite` | SQLite 数据库文件路径 |
 | `smith_profile_dir` | `project_root` | `<repo>/agents/smith/` | Smith 内置身份种子目录 |
 | `builtin_identities_dir` | `project_root` | `<repo>/agents/identities/` | YAML 领域身份目录 |
-| `builtin_skills_dir` | `data_dir` | `~/.agent-smith/builtin/skills/` | Smith 管理的、已同步的内置技能目录；不属于用户可编辑的 `agent/skills/` |
-| `bundled_skills_dir` | 安装包优先，源码树回退 | `<python-data>/agent_smith_common/builtin_skills/` 或 `<repo>/agents/skills/` | 内置技能的只读分发来源 |
+| `builtin_skills_dir` | `data_dir` | `~/.helve/builtin/skills/` | Smith 管理的、已同步的内置技能目录；不属于用户可编辑的 `agent/skills/` |
+| `bundled_skills_dir` | 安装包优先，源码树回退 | `<python-data>/helve_common/builtin_skills/` 或 `<repo>/agents/skills/` | 内置技能的只读分发来源 |
 | `builtin_tools_dir` | `project_root` | `<repo>/agents/tools/` | 内置工具定义目录 |
 | `safety_rules_path` | `project_root` | `<repo>/agents/safety/dangerous_commands.json` | 危险命令安全规则文件 |
 
@@ -189,17 +189,17 @@ def ensure_base_dirs(self) -> None:
 
 显式确保三个基础数据目录存在（新建目录的权限为 `0o700`，已有真实目录保持现有权限），随后同步内置技能：
 
-1. `~/.agent-smith/` — 数据根目录
-2. `~/.agent-smith/agent/` — Agent 实例目录
-3. `~/.agent-smith/sqlite/` — SQLite 数据库所在目录
+1. `~/.helve/` — 数据根目录
+2. `~/.helve/agent/` — Agent 实例目录
+3. `~/.helve/sqlite/` — SQLite 数据库所在目录
 
 技能同步（`_install_builtin_skills()`）：
 
-4. 额外创建 `~/.agent-smith/builtin/` 与 `~/.agent-smith/builtin/skills/`（同为 `0o700`）
-5. 从 `bundled_skills_dir` 中找出包含顶层 `SKILL.md` 的目录，复制到 `~/.agent-smith/builtin/skills/`
+4. 额外创建 `~/.helve/builtin/` 与 `~/.helve/builtin/skills/`（同为 `0o700`）
+5. 从 `bundled_skills_dir` 中找出包含顶层 `SKILL.md` 的目录，复制到 `~/.helve/builtin/skills/`
 6. 删除该目标目录中不再属于当前分发集合的技能目录，并写入权限为 `0o600` 的 `.manifest.json`
 
-wheel 安装时，分发来源是 `sysconfig.get_path("data")` 下的 `agent_smith_common/builtin_skills/`；源码开发时才回退到仓库的 `agents/skills/`。若分发来源不存在，技能同步安全地跳过；若来源存在但发现的技能集合为空、且目标目录已装有技能，则记 warning 并整体跳过本次同步，不删除任何已装技能（防止空/损坏的分发包抹掉内置技能）。`agent/skills/` 仍保留给用户安装的技能，不会被此同步覆盖。
+wheel 安装时，分发来源是 `sysconfig.get_path("data")` 下的 `helve_common/builtin_skills/`；源码开发时才回退到仓库的 `agents/skills/`。若分发来源不存在，技能同步安全地跳过；若来源存在但发现的技能集合为空、且目标目录已装有技能，则记 warning 并整体跳过本次同步，不删除任何已装技能（防止空/损坏的分发包抹掉内置技能）。`agent/skills/` 仍保留给用户安装的技能，不会被此同步覆盖。
 
 `.manifest.json` 记录每个分发文件的 source/target `mtime_ns`、`size` 和源文件 SHA-256。两端元数据均未变化时，后续同步不会重新读取文件内容；任一元数据变化时才计算 SHA-256 并按内容决定是否复制。这样可以恢复普通篡改，同时保留重复启动的低 I/O 路径；刻意伪造时间戳和大小的攻击不在该元数据快路径的完整性保证内。
 
@@ -238,12 +238,12 @@ def __getattr__(name: str):
 | 常量 | 对应属性 | 典型值 |
 |------|---------|--------|
 | `PATHS` | — | `AppPaths` 实例本身 |
-| `DATA_DIR` | `data_dir` | `~/.agent-smith/` |
-| `AGENT_DIR` | `agent_dir` | `~/.agent-smith/agent/` |
-| `SQLITE_PATH` | `sqlite_path` | `~/.agent-smith/sqlite/agent-smith.sqlite` |
+| `DATA_DIR` | `data_dir` | `~/.helve/` |
+| `AGENT_DIR` | `agent_dir` | `~/.helve/agent/` |
+| `SQLITE_PATH` | `sqlite_path` | `~/.helve/sqlite/helve.sqlite` |
 | `SMITH_PROFILE_DIR` | `smith_profile_dir` | `<repo>/agents/smith/` |
 | `BUILTIN_IDENTITIES_DIR` | `builtin_identities_dir` | `<repo>/agents/identities/` |
-| `BUILTIN_SKILLS_DIR` | `builtin_skills_dir` | `~/.agent-smith/builtin/skills/` |
+| `BUILTIN_SKILLS_DIR` | `builtin_skills_dir` | `~/.helve/builtin/skills/` |
 | `BUILTIN_TOOLS_DIR` | `builtin_tools_dir` | `<repo>/agents/tools/` |
 | `SAFETY_RULES_PATH` | `safety_rules_path` | `<repo>/agents/safety/dangerous_commands.json` |
 
@@ -304,7 +304,7 @@ async def get_db() -> aiosqlite.Connection:
 
 **连接初始化流程：**
 
-1. 在线程中调用 `paths.ensure_base_dirs()` 确保 `~/.agent-smith/sqlite/` 目录存在，并避免技能哈希/复制阻塞事件循环；此步骤不持有 `_db_lock`
+1. 在线程中调用 `paths.ensure_base_dirs()` 确保 `~/.helve/sqlite/` 目录存在，并避免技能哈希/复制阻塞事件循环；此步骤不持有 `_db_lock`
 2. `aiosqlite.connect(str(sqlite_path))` 创建连接
 3. 设置 `db.row_factory = aiosqlite.Row` — 查询结果以 `Row` 对象返回（支持按列名访问）
 4. 执行 `PRAGMA journal_mode=WAL` — 启用 Write-Ahead Logging，允许读写并发
@@ -336,7 +336,7 @@ WAL (Write-Ahead Logging) 是 SQLite 的日志模式，与默认的 rollback jou
 - **性能** — 写操作更快（顺序写 WAL 文件，不需要复制整页到回滚日志）
 - **持久化** — WAL 模式是持久设置，一旦在某个数据库上启用，重新打开该数据库仍为 WAL 模式
 
-Agent-Smith 作为本地单用户应用，WAL 模式的主要收益是允许 FastAPI 的多个异步请求处理器并发读取数据库，同时不阻塞写入操作。
+Helve 作为本地单用户应用，WAL 模式的主要收益是允许 FastAPI 的多个异步请求处理器并发读取数据库，同时不阻塞写入操作。
 
 ---
 
@@ -580,7 +580,7 @@ hash_chain.py（叶子模块，仅依赖标准库）
 
 ```toml
 [project]
-name = "agent-smith-common"
+name = "helve-common"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = ["pyyaml>=6.0", "aiosqlite>=0.21"]
@@ -597,7 +597,7 @@ Python 版本要求 `>=3.11`（使用了 `X | Y` 联合类型语法等 3.10+ 特
 
 ### 11.1 内置技能 data files
 
-`[tool.setuptools.data-files]` 将每个内置技能的 `SKILL.md` 以及需要随技能分发的引用文件写入 wheel 的 `agent_smith_common/builtin_skills/` 目录。安装后的 `bundled_skills_dir` 优先读取该位置，因此源码目录存在技能并不等于安装包已经包含它。该 `common` wheel 不携带完整的 `agents/smith`、`agents/identities`、tools 或 safety 资源；脱离源码树运行时必须通过 `AGENT_SMITH_PROJECT_ROOT` 指向完整资源根目录。
+`[tool.setuptools.data-files]` 将每个内置技能的 `SKILL.md` 以及需要随技能分发的引用文件写入 wheel 的 `helve_common/builtin_skills/` 目录。安装后的 `bundled_skills_dir` 优先读取该位置，因此源码目录存在技能并不等于安装包已经包含它。该 `common` wheel 不携带完整的 `agents/smith`、`agents/identities`、tools 或 safety 资源；脱离源码树运行时必须通过 `HELVE_PROJECT_ROOT` 指向完整资源根目录。
 
 新增内置技能或其引用文件时，必须同步更新该清单；`server/tests/test_common_infrastructure.py`（`test_wheel_data_files_reproduce_every_bundled_skill_file`）用 `rglob` 遍历每个技能内的**每一个文件**（含 `references/` 等子目录），与声明的 data-files 做**双向精确集合比对**——漏写或多写任一引用文件都会导致测试失败，不止校验技能本体。
 

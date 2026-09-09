@@ -1,6 +1,6 @@
 # Built-in Skills
 
-`agents/skills/` 存放随 Agent-Smith 发布的内置 Skill。
+`agents/skills/` 存放随 Helve 发布的内置 Skill。
 
 ## Skill 是什么
 

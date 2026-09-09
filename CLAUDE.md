@@ -10,7 +10,7 @@ its directory holds a top-level `SKILL.md`.
 
 ## 1. What This Project Is
 
-Agent-Smith is a local-first personal assistant Agent workbench that runs in the terminal.
+Helve is a local-first personal assistant Agent workbench that runs in the terminal.
 
 - Smith is the single, always-on Agent
 - Smith uses the skill system to switch workflows per task type
@@ -21,7 +21,7 @@ Agent-Smith is a local-first personal assistant Agent workbench that runs in the
 
 One-line:
 
-> Agent-Smith is a local-first Agent workbench. Smith is your single resident
+> Helve is a local-first Agent workbench. Smith is your single resident
 > assistant — it keeps context, accumulates memory, and switches workflows via skills.
 
 ## 2. Current Priority
@@ -86,7 +86,7 @@ is only erased by `forget`/`correction`), placement (`work` evidence cannot
 establish a `Verified Outcomes` entry). Rejection is per change, so one bad edit
 does not sink the batch, and the reviewer is shown only what survived. On total
 failure nothing is written — a degraded draft would become the next round's
-trusted baseline. `_snapshot.py` makes `~/.agent-smith/` a git repository and
+trusted baseline. `_snapshot.py` makes `~/.helve/` a git repository and
 commits `context.md`, `memory/durable.md` and `memory/recent.jsonl` after every
 accepted write, so recovery is not limited to one `.bak` generation. The
 evidence log is tracked with the views because restoring a conclusion without
@@ -148,16 +148,16 @@ Rules:
 - `agents/smith/` is where Smith's built-in identity seed lives
 - New capabilities → add skills, not new agents
 - `engine/observability/` and `engine/execution/orchestration/run_state.py`
-  share `~/.agent-smith/runs/`: the observability index holds `<id>.summary.json`,
+  share `~/.helve/runs/`: the observability index holds `<id>.summary.json`,
   the state store holds `<id>.json`. Retention lives with observability but
   deletes both, so it goes through `RunStateStore.prune()` rather than building
   the path itself — the state store owns the filename *and* the refusal to
   delete a run that is still executing. A consequence worth knowing:
-  `AGENT_SMITH_OBSERVABILITY_*` therefore also bounds how long a finished run
+  `HELVE_OBSERVABILITY_*` therefore also bounds how long a finished run
   stays resumable.
 
 `common/paths.py` is the single source of truth for the runtime data root
-(`~/.agent-smith`, created `0o700`/`0o600`; a pre-existing directory keeps the
+(`~/.helve`, created `0o700`/`0o600`; a pre-existing directory keeps the
 mode the user gave it — deliberate, test-locked behavior). `engine/safety/tool_guard.py`
 anchors its non-bypassable platform-write protection on it.
 
@@ -165,7 +165,7 @@ anchors its non-bypassable platform-write protection on it.
 
 | Area | Key Files |
 |---|---|
-| Terminal entry | `shell/bin/smith.js` → `shell/src/index.tsx` |
+| Terminal entry | `shell/bin/helve.js` → `shell/src/index.tsx` |
 | Backend spawn | `shell/src/dev-server.ts` (runs `uv run uvicorn app.main:app`) |
 | Engine assembly | `server/app/services/engine_runtime.py` |
 | Agent lifecycle | `server/app/services/agent_profile_service.py` |
@@ -235,7 +235,7 @@ agents/smith/hooks.yaml  # Hook configuration (which hooks are enabled)
 ### Integration Points
 
 - `preparation.py`: Loads hooks from `agents/smith/hooks.yaml`, then user hooks from
-  `~/.agent-smith/hooks.yaml`, into `services.hook_registry`
+  `~/.helve/hooks.yaml`, into `services.hook_registry`
 - `react_loop.py`: Calls `hook_registry.run_pre_hooks()` before tool execution, `run_post_hooks()` after
 - `lifecycle.py`: Calls `hook_registry.run_stop_hooks()` at response end
 
@@ -246,7 +246,7 @@ agents/smith/hooks.yaml  # Hook configuration (which hooks are enabled)
 | `config-protection` | Pre | ✅ | Block edits to linter/formatter/type-checker configs |
 | `console-warn` | Post | ✅ | Warn about `console.log`, `print()`, etc. |
 | `quality-gate` | Post | ✅ | Run format/lint checks (async) |
-| `cost-tracker` | Stop | ✅ | Write token usage to `~/.agent-smith/metrics/costs.jsonl` |
+| `cost-tracker` | Stop | ✅ | Write token usage to `~/.helve/metrics/costs.jsonl` |
 
 `cost-tracker` bills the run's aggregated `TOKEN_USAGE` events against the
 interactive client's model name. It writes nothing when a run reported no usage
@@ -262,7 +262,7 @@ per request in `lifecycle.py` (`use_fact_gate`), always active, challenge-only.
 
 Users can add custom hooks:
 1. Write a Hook class implementing `PreToolHook`, `PostToolHook`, or `StopHook`
-2. Add entry to `~/.agent-smith/hooks.yaml` (loaded after built-in hooks)
+2. Add entry to `~/.helve/hooks.yaml` (loaded after built-in hooks)
 
 Hook system is **pluggable** — engine provides framework, agents provide implementations.
 
@@ -400,17 +400,17 @@ id (`SMITH_TEMPLATE_ID` in `engine/llm/model_config.py`, `role:` in
 templates have been removed; optional skills can still be installed into Smith's
 runtime profile.
 
-Skills that ship with Smith are mirrored into `~/.agent-smith/builtin/skills/`,
+Skills that ship with Smith are mirrored into `~/.helve/builtin/skills/`,
 discovered by scanning `agents/skills/` for directories holding a `SKILL.md`.
 A wheel install ships them through `[tool.setuptools.data-files]` in
 `common/pyproject.toml`, which needs one entry per skill — a test asserts that
 declaration stays in sync.
 
 Profile seeding is copy-once: `init_smith_profile_files` skips any file that
-already exists in `~/.agent-smith/`, so additions to the repo seed (e.g. the
+already exists in `~/.helve/`, so additions to the repo seed (e.g. the
 commented `knowledge:` example in `agents/smith/config.yaml`) reach fresh
 installs only. Existing installs configure features by editing
-`~/.agent-smith/config.yaml` directly.
+`~/.helve/config.yaml` directly.
 
 ## 8. Implementation Guidance
 
@@ -459,9 +459,9 @@ A Seatbelt test *failing* rather than skipping on Linux means that marker is
 missing — add it.
 
 `shell` has 12 auth-dependent tests that fail on a container with no
-`~/.agent-smith/auth_token`: they call the real `localAuthHeaders`, which reads
-that file. Create it (`mkdir -p ~/.agent-smith && printf token > ~/.agent-smith/auth_token
-&& chmod 600 ~/.agent-smith/auth_token`) to run the whole suite green, or treat
+`~/.helve/auth_token`: they call the real `localAuthHeaders`, which reads
+that file. Create it (`mkdir -p ~/.helve && printf token > ~/.helve/auth_token
+&& chmod 600 ~/.helve/auth_token`) to run the whole suite green, or treat
 them as environment noise — they fail identically on `main`, not as a regression
 from your change.
 

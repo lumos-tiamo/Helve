@@ -104,6 +104,8 @@ def _bounded_trace_value(value: Any, depth: int = 0) -> Any:
 class TraceStore:
     """Append and read bounded execution events without blocking a run."""
 
+    # Genesis-hash seed; deliberately keeps the pre-Helve name so traces
+    # recorded before the rename still verify.  Never user-visible.
     _CHAIN_NAMESPACE = "agent-smith-trace"
 
     def __init__(self, profile_dir: Path) -> None:

@@ -1,7 +1,7 @@
 # 06 · Agent 文件与技能系统设计参考
 
 > 来源：QoderWake 本地文件逆向分析（2026-07-03）
-> 目的：为 Agent-Smith 的 Agent 身份定义、技能打包、安全护栏、Hooks 系统提供设计参考
+> 目的：为 Helve 的 Agent 身份定义、技能打包、安全护栏、Hooks 系统提供设计参考
 
 ## 1. Agent 身份文件系统
 
@@ -42,7 +42,7 @@ YAML frontmatter（name / description / argument-hint）+ Markdown 正文（AI �
 
 每个 Worker 的 Memory 和 Skills 用独立 git 仓库版本化。
 
-## 7. Agent-Smith 采纳建议
+## 7. Helve 采纳建议
 
 P0: Agent 8 文件结构 / SKILL.md 格式 / 安全护栏
 P1: plugin.json / hooks.json / 两层记忆

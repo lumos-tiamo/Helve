@@ -6,20 +6,20 @@
 > 保留在此仅供追溯当时的设计取舍，不再随代码更新。
 
 
-> **定位**：Agent-Smith 是一个**本地优先（local-first）的单 Agent 终端工作台**。它不是一个 Agent 框架，也不是一个云端平台——它是一个能长期驻留在你机器上、跨会话累积记忆、按任务类型切换工作流的助手程序。
+> **定位**：Helve 是一个**本地优先（local-first）的单 Agent 终端工作台**。它不是一个 Agent 框架，也不是一个云端平台——它是一个能长期驻留在你机器上、跨会话累积记忆、按任务类型切换工作流的助手程序。
 > **适合**：第一次接触这个仓库的人；想判断"这套设计值不值得抄"的人。
 
 ---
 
 ## 1. 一句话定位
 
-> Agent-Smith 是一个本地 Agent 工作台。Smith 是你唯一的常驻助手——它保留上下文、跨会话累积记忆、通过 skill 切换工作流。
+> Helve 是一个本地 Agent 工作台。Smith 是你唯一的常驻助手——它保留上下文、跨会话累积记忆、通过 skill 切换工作流。
 
 三个词组决定了全部架构：
 
 | 词组 | 落到架构上的含义 |
 |------|-----------------|
-| **本地优先** | 所有状态落在 `~/.agent-smith`，一个 SQLite 文件 + 若干 Markdown/JSONL。没有服务端账号、没有远程数据库、没有向量服务 |
+| **本地优先** | 所有状态落在 `~/.helve`，一个 SQLite 文件 + 若干 Markdown/JSONL。没有服务端账号、没有远程数据库、没有向量服务 |
 | **单 Agent** | 没有子 Agent、没有 Agent 间路由、没有编排器。一次运行只有一个 ReAct 循环在跑（管线模式下是"一个循环跑多个节点"，不是"多个 Agent"） |
 | **skill 切换工作流** | 能力扩展的唯一正确姿势是加 `SKILL.md`，不是加 Agent、不是加代码分支 |
 
@@ -27,7 +27,7 @@
 
 ## 2. 它解决什么问题——和三类东西的边界
 
-Agent-Smith 的定位只有放在坐标系里才清楚。
+Helve 的定位只有放在坐标系里才清楚。
 
 ```mermaid
 quadrantChart
@@ -38,7 +38,7 @@ quadrantChart
     quadrant-2 "云端成品"
     quadrant-3 "云端框架"
     quadrant-4 "本地框架"
-    "Agent-Smith": [0.85, 0.80]
+    "Helve": [0.85, 0.80]
     "Claude Code / Codex CLI": [0.80, 0.88]
     "LangChain / LlamaIndex": [0.35, 0.15]
     "AutoGPT 类": [0.45, 0.30]
@@ -47,7 +47,7 @@ quadrantChart
 
 ### 2.1 和云端 Agent 平台的区别
 
-云端平台（Dify、Coze、各家 Assistant API）把 Agent 做成**多租户服务**：租户隔离、向量库、Redis 队列、消息中间件、水平扩容。Agent-Smith 把这一整套全部删掉了：
+云端平台（Dify、Coze、各家 Assistant API）把 Agent 做成**多租户服务**：租户隔离、向量库、Redis 队列、消息中间件、水平扩容。Helve 把这一整套全部删掉了：
 
 - 没有租户概念——机器就是边界
 - 没有队列——`asyncio.create_task` 就是队列（`server/app/services/scheduler.py`）
@@ -58,9 +58,9 @@ quadrantChart
 
 ### 2.2 和 Claude Code / Codex CLI 的区别
 
-同为终端 Agent，Agent-Smith 的差别在三处：
+同为终端 Agent，Helve 的差别在三处：
 
-| 维度 | Claude Code / Codex CLI | Agent-Smith |
+| 维度 | Claude Code / Codex CLI | Helve |
 |------|------------------------|-------------|
 | 记忆 | 会话内上下文 + 手工维护的 `CLAUDE.md` | 会话内上下文 + **自动编译的两份记忆视图**（`context.md` / `durable.md`），由带证据裁决的编译管线产出 |
 | 工作流 | skill/命令被动匹配，不成链 | 三条**声明式技能链**（`agents/pipelines/*.yaml`），每个节点带门禁（gate），门禁不过就带反馈重试 |
@@ -70,7 +70,7 @@ quadrantChart
 
 ### 2.3 和 LangChain 类框架的区别
 
-框架卖的是**可组合的抽象**：你写 Chain、写 Tool、写 Memory 类。Agent-Smith 卖的是**已经装好的机器**：ReAct 循环、工具注册表、安全守卫、记忆管线都是固定件，你只往里放**内容**（YAML + Markdown + 一个 `execute` 函数）。
+框架卖的是**可组合的抽象**：你写 Chain、写 Tool、写 Memory 类。Helve 卖的是**已经装好的机器**：ReAct 循环、工具注册表、安全守卫、记忆管线都是固定件，你只往里放**内容**（YAML + Markdown + 一个 `execute` 函数）。
 
 这就是 `agents/` 这一层存在的意义——它是"内容层"，不 import 任何其它层：
 
@@ -98,8 +98,8 @@ PRIVATE_FILE_MODE = 0o600
 ```
 
 - **权限强制**：每个受管目录 `mkdir(mode=0o700)` 后再 `chmod(0o700)`（`_ensure_private_dir`）。因为 `mkdir` 的 mode 会被 umask 削弱，只有显式 `chmod` 才保证结果。
-- **软链拒绝**：`_ensure_real_path()` 逐段遍历路径，**任何一段是 symlink 就抛异常**。这堵的是"把 `~/.agent-smith/agent` 换成指向 `/etc` 的软链，然后诱导 Agent 写文件"这类攻击。
-- **项目根签名校验**：`_is_agent_smith_root()` 要求同时存在 `agents/smith/config.yaml`、`agents/identities/smith.yaml`、以及至少一个 `agents/skills/*/SKILL.md`。只看有没有 `agents/` 目录会把别人的项目误认成 Agent-Smith 的根。
+- **软链拒绝**：`_ensure_real_path()` 逐段遍历路径，**任何一段是 symlink 就抛异常**。这堵的是"把 `~/.helve/agent` 换成指向 `/etc` 的软链，然后诱导 Agent 写文件"这类攻击。
+- **项目根签名校验**：`_is_helve_root()` 要求同时存在 `agents/smith/config.yaml`、`agents/identities/smith.yaml`、以及至少一个 `agents/skills/*/SKILL.md`。只看有没有 `agents/` 目录会把别人的项目误认成 Helve 的根。
 
 这些不是过度设计——`engine/safety/tool_guard.py` 的**不可绕过的平台写保护**就锚在这个路径根上。如果路径根能被软链劫持，整个安全模型就没了。
 
@@ -120,11 +120,11 @@ PRIVATE_FILE_MODE = 0o600
 
 ### 3.3 Harness 优先，而非 Prompt 优先
 
-"Harness"指的是包在模型外面的那套机器：循环、工具、门禁、预算、守卫。Agent-Smith 的一个反复出现的模式是——**能用确定性代码判定的，绝不交给模型判定**。
+"Harness"指的是包在模型外面的那套机器：循环、工具、门禁、预算、守卫。Helve 的一个反复出现的模式是——**能用确定性代码判定的，绝不交给模型判定**。
 
 三个最典型的例子：
 
-| 场景 | 反模式（Prompt 优先） | Agent-Smith 的做法 |
+| 场景 | 反模式（Prompt 优先） | Helve 的做法 |
 |------|---------------------|-------------------|
 | 记忆写入是否可信 | 让 reviewer 模型判断这条记忆有没有证据 | `engine/memory/_guards.py` 用**三道确定性守卫**先裁决（引用是否真实存在、quote 是否逐字、留存规则、放置规则），只把幸存的变更给模型看 |
 | 任务该走哪条工作流 | 用一个分类器模型判断意图 | `engine/identity/catalog.py` 纯**词法关键词/示例匹配** + 优先级，没有 LLM 兜底（提交 `98c7e1c refactor(routing): delete the LLM fallback the docs still promised`） |
@@ -298,7 +298,7 @@ sequenceDiagram
 
 | 概念 | 定义 | 代码锚点 |
 |------|------|---------|
-| **Agent** | Smith 本身。运行时唯一实体，有一份档案（`agent_profiles` 表 + `~/.agent-smith/agent/`） | `server/app/services/agent_profile_service.py` |
+| **Agent** | Smith 本身。运行时唯一实体，有一份档案（`agent_profiles` 表 + `~/.helve/agent/`） | `server/app/services/agent_profile_service.py` |
 | **Identity（身份）** | 一组「角色提示 + 工具白名单 + 技能白名单 + 路由声明」。目前两个：`smith`（默认）、`coding` | `agents/identities/*.yaml` |
 | **Route（路由）** | 身份内声明的意图条目：`keywords` / `examples` / `pipeline` / `priority`。纯词法匹配 | `engine/identity/catalog.py` |
 | **Pipeline（管线）** | 一条声明式技能链：若干 step，每 step 绑定 `skill` + `gate` + `allowed_tools` + `instructions` | `agents/pipelines/*.yaml` |
@@ -326,7 +326,7 @@ sequenceDiagram
 | ASGI 服务器 | **uvicorn[standard]** | `>=0.34` | Shell 用 `uv run uvicorn app.main:app` 拉起 |
 | 流式 | **sse-starlette** | `>=2.2` | 逐 token 推送到终端 |
 | 校验 | **pydantic[email]** | `>=2.10` | 请求/响应 schema |
-| 数据库 | **SQLite + aiosqlite** | `>=0.21` | 8 张表，单文件 `~/.agent-smith/sqlite/agent-smith.sqlite` |
+| 数据库 | **SQLite + aiosqlite** | `>=0.21` | 8 张表，单文件 `~/.helve/sqlite/helve.sqlite` |
 | HTTP 客户端 | **httpx** | `>=0.28` | LLM provider、web 工具、MCP HTTP 传输 |
 | 配置 | **PyYAML** | `>=6.0` | 全部内容层与配置文件 |
 | PDF | **pypdf** + **pdfplumber** | `>=6.0` / `>=0.11` | `read_pdf` / `render_pdf_page` 工具 |
@@ -348,9 +348,9 @@ sequenceDiagram
 
 代价也很明确，而且代码里能看到它们在被认真处理：
 
-- **端口竞争**：`/api/health` 返回 `nonce`，回显启动器传入的 `SMITH_SERVER_NONCE`，让 Shell 分辨"这个端口上的 server 是不是我拉起来的"。手工启动的 server 返回 `null`，启动器视为"不是我的"。
+- **端口竞争**：`/api/health` 返回 `nonce`，回显启动器传入的 `HELVE_SERVER_NONCE`，让 Shell 分辨"这个端口上的 server 是不是我拉起来的"。手工启动的 server 返回 `null`，启动器视为"不是我的"。
 - **代码陈旧**：`_running_stale_code()` 遍历 `sys.modules`，比较每个已加载源文件的 mtime 与进程启动时间。注释说得很直白——"一个只探测 API 形状的 shell 看不出来，因为每条路由都还在，于是修复可能在磁盘上躺几个小时而运行中的 server 还在跑它启动时的代码"。它还排除了 `.venv` / `site-packages` / `node_modules`，因为虚拟环境就在仓库里，`uv sync` 碰一下依赖会被误读成"工作树前进了"。
-- **鉴权**：CORS 只允许 `localhost` / `127.0.0.1`（正则 `^https?://(localhost|127\.0\.0\.1)(:\d+)?$`），所有路由挂 `Depends(require_auth)`，token 存 `~/.agent-smith/auth_token`（`0o600`）。
+- **鉴权**：CORS 只允许 `localhost` / `127.0.0.1`（正则 `^https?://(localhost|127\.0\.0\.1)(:\d+)?$`），所有路由挂 `Depends(require_auth)`，token 存 `~/.helve/auth_token`（`0o600`）。
 
 ### 7.3 为什么是 SQLite 而不是 Postgres
 
@@ -410,18 +410,18 @@ Ink 把终端当成 React 的渲染目标。对一个需要"流式追加 + 局�
 
 ## 8. 数据落盘全景
 
-一切状态都在 `~/.agent-smith`（`0o700`）：
+一切状态都在 `~/.helve`（`0o700`）：
 
 ```mermaid
 flowchart TD
-    ROOT["~/.agent-smith/ (0700)"]
+    ROOT["~/.helve/ (0700)"]
     ROOT --> CFG["config.yaml<br/>平台级配置（LLM 第 1 层）"]
     ROOT --> TOK["auth_token (0600)<br/>本地 HTTP 鉴权"]
-    ROOT --> SM["SMITH.md<br/>用户级全局指令"]
+    ROOT --> SM["HELVE.md<br/>用户级全局指令"]
     ROOT --> AUD["audit.jsonl + audit.jsonl.head<br/>防篡改审计哈希链"]
     ROOT --> HIS["shell_history.json<br/>终端输入历史"]
     ROOT --> SNAP["snapshots/<br/>工具快照（按 run 分目录）"]
-    ROOT --> SQL["sqlite/agent-smith.sqlite<br/>8 张表"]
+    ROOT --> SQL["sqlite/helve.sqlite<br/>8 张表"]
     ROOT --> BI["builtin/skills/<br/>Smith 自带技能镜像 + .manifest.json"]
     ROOT --> AG["agent/  ← Agent 档案根"]
 
@@ -455,7 +455,7 @@ flowchart TD
 
 ### 8.2 为什么内建技能要镜像一份
 
-`~/.agent-smith/builtin/skills/` 是 `agents/skills/` 的镜像，理由写在 `common/paths.py:_install_builtin_skills` 的 docstring：
+`~/.helve/builtin/skills/` 是 `agents/skills/` 的镜像，理由写在 `common/paths.py:_install_builtin_skills` 的 docstring：
 
 > `agent/skills` 保留给**用户安装**的技能。把自带技能放在 `builtin/skills` 下，让已安装的 Smith 保留默认能力，同时不把它们当成用户定制。
 
@@ -528,7 +528,7 @@ flowchart TD
 
 ```mermaid
 timeline
-    title Agent-Smith 关键演进
+    title Helve 关键演进
     section 收敛期
         删除多 Agent 模板 : 只留一个 Smith 身份，legacy personal-assistant 降级为兼容 id
         删除 LLM 路由兜底 : 98c7e1c 路由回归纯词法
@@ -604,7 +604,7 @@ timeline
 
 **理由**：检索的失败模式是"该看到的没看到"，而且**用户完全无感**——他不知道 Agent 本来记得这件事，只是这次没检索到。全量注入的失败模式是"预算超了"，这个是**编译期就能发现并处理**的。把不确定性从运行时挪到编译时，是这个项目反复出现的手法。
 
-另一个理由是可审计性：用户可以直接 `cat ~/.agent-smith/agent/memory/durable.md` 看到 Agent 记住了什么、没记住什么。检索式记忆做不到这一点——记忆库里有什么和这次注入了什么是两回事。
+另一个理由是可审计性：用户可以直接 `cat ~/.helve/agent/memory/durable.md` 看到 Agent 记住了什么、没记住什么。检索式记忆做不到这一点——记忆库里有什么和这次注入了什么是两回事。
 
 **代价**：记忆总量有硬上限。项目历史上确实做过四层时间分层 + episodes + FTS 的版本，最后全删了。删除理由记在 `CLAUDE.md`：中文 FTS 实际失效、memory_ops 写入失联、路径穿越漏洞、零管线测试——一套没人能验证的复杂机制，不如一套能验证的简单机制。
 
@@ -684,7 +684,7 @@ timeline
 
 **理由**：`.bak` 只能回退一代。记忆编译是**每轮都可能发生**的，一个坏写入之后再来两轮正常写入，`.bak` 里就只剩坏的了。git 给的是完整历史 + 便宜的 diff + 现成的工具链。
 
-**代价**：多一个 git 仓库要维护（在 `~/.agent-smith` 下）。用 git 而不是自己实现版本管理，是"已装依赖优先"的直接应用——git 一定在，而且比任何自研方案都可靠。
+**代价**：多一个 git 仓库要维护（在 `~/.helve` 下）。用 git 而不是自己实现版本管理，是"已装依赖优先"的直接应用——git 一定在，而且比任何自研方案都可靠。
 
 ### ADR-09 · 每个视图各自的日志游标
 
@@ -736,7 +736,7 @@ timeline
 
 三条路由独立配置模型，是这个成本模型能生效的前提——否则门禁和记忆编译会用和主对话一样贵的模型。
 
-`agents/smith/hooks/cost_tracker.py`（132 行）作为 `StopHook` 在每次回合末把用量写进 `~/.agent-smith/metrics/costs.jsonl`。
+`agents/smith/hooks/cost_tracker.py`（132 行）作为 `StopHook` 在每次回合末把用量写进 `~/.helve/metrics/costs.jsonl`。
 
 ### 13.2 延迟特征
 
@@ -766,10 +766,10 @@ cd shell  && npm run build && npm test                            # 303 passed
 两个必须知道的环境事实：
 
 1. **engine 的 ~59 个跳过是 macOS 专属的 Seatbelt 测试**，每个都带 `@pytest.mark.skipif(sys.platform != "darwin")`。在 macOS 上它们**会跑**而不是跳过。一个 Seatbelt 测试在 Linux 上**失败而不是跳过**，说明有人漏加了这个 marker。
-2. **shell 有 12 个依赖鉴权的测试**，在没有 `~/.agent-smith/auth_token` 的容器里会失败——它们调用真实的 `localAuthHeaders`，而那个函数会读这个文件。造一个就绿：
+2. **shell 有 12 个依赖鉴权的测试**，在没有 `~/.helve/auth_token` 的容器里会失败——它们调用真实的 `localAuthHeaders`，而那个函数会读这个文件。造一个就绿：
 
 ```bash
-mkdir -p ~/.agent-smith && printf token > ~/.agent-smith/auth_token && chmod 600 ~/.agent-smith/auth_token
+mkdir -p ~/.helve && printf token > ~/.helve/auth_token && chmod 600 ~/.helve/auth_token
 ```
 
 这两条不是"已知缺陷"，是**环境噪声**——它们在 `main` 上表现一致，不是你的改动引入的回归。文档里显式写出来，是为了避免每个新人重新调查一遍。
@@ -881,7 +881,7 @@ mkdir -p ~/.agent-smith && printf token > ~/.agent-smith/auth_token && chmod 600
 `engine/sandbox/macos_seatbelt.py`（491 行）是 macOS 的 Seatbelt 实现，`host.py`（282 行）是无沙箱的宿主执行。Linux 上目前走宿主路径。这不是遗漏，是取舍——Seatbelt 在 macOS 上是内建能力，Linux 侧要引入的方案（bubblewrap / seccomp / 容器）都需要额外依赖。
 
 **"`agents/smith/config.yaml` 里的 `tools.enabled` 改了为什么不生效？"**
-因为它只对**全新安装**生效。档案种子是 copy-once 的：`init_smith_profile_files` 会跳过任何已经存在于 `~/.agent-smith/` 的文件。已有安装要改就改 `~/.agent-smith/agent/config.yaml`。这一条在 `agents/smith/config.yaml` 顶部的注释里写着，因为它坑过人。
+因为它只对**全新安装**生效。档案种子是 copy-once 的：`init_smith_profile_files` 会跳过任何已经存在于 `~/.helve/` 的文件。已有安装要改就改 `~/.helve/agent/config.yaml`。这一条在 `agents/smith/config.yaml` 顶部的注释里写着，因为它坑过人。
 
 **"为什么 `role: personal-assistant` 还在？"**
 遗留兼容 id（`SMITH_TEMPLATE_ID`，定义在 `engine/llm/model_config.py`）。老的 API 路径和数据路径还在用它。改它会破坏已有安装的数据定位。
@@ -927,4 +927,4 @@ mkdir -p ~/.agent-smith && printf token > ~/.agent-smith/auth_token && chmod 600
 
 ---
 
-> **一句话收尾**：Agent-Smith 的每一处设计都可以用一个问题串起来——**"如果这里出错，谁会发现、什么时候发现、代价是什么？"** 单 Agent 是因为多 Agent 的错误归因太难；确定性守卫先于模型判断是因为前者可复现；记忆四层把关是因为它的错误会自我强化；可用性被当成安全属性是因为烦人的措施最终会被关掉。读后面十三篇时带着这个问题，很多看起来啰嗦的地方会立刻讲得通。
+> **一句话收尾**：Helve 的每一处设计都可以用一个问题串起来——**"如果这里出错，谁会发现、什么时候发现、代价是什么？"** 单 Agent 是因为多 Agent 的错误归因太难；确定性守卫先于模型判断是因为前者可复现；记忆四层把关是因为它的错误会自我强化；可用性被当成安全属性是因为烦人的措施最终会被关掉。读后面十三篇时带着这个问题，很多看起来啰嗦的地方会立刻讲得通。

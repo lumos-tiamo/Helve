@@ -969,7 +969,7 @@ export class NodeBridge {
     const terminalStatus = await this.consumeStream(
       streamMessage(baseUrl, session.id, text, {
         skillName,
-        workingDir: process.env.SMITH_PROJECT_CWD?.trim() || process.cwd(),
+        workingDir: process.env.HELVE_PROJECT_CWD?.trim() || process.cwd(),
         signal,
       }),
       signal,

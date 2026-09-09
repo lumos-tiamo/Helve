@@ -80,8 +80,8 @@ test("smith-ui payload parser rejects remote image sources and non-presentation 
 
 test("smith-ui payload parser rejects an image larger than five MiB", () => {
   const projectRoot = mkdtempSync(path.join(tmpdir(), "smith-ui-image-"));
-  const previousProjectRoot = process.env.SMITH_PROJECT_CWD;
-  process.env.SMITH_PROJECT_CWD = projectRoot;
+  const previousProjectRoot = process.env.HELVE_PROJECT_CWD;
+  process.env.HELVE_PROJECT_CWD = projectRoot;
   writeFileSync(path.join(projectRoot, "large.png"), Buffer.alloc(5 * 1024 * 1024 + 1));
 
   try {
@@ -94,16 +94,16 @@ test("smith-ui payload parser rejects an image larger than five MiB", () => {
       null,
     );
   } finally {
-    if (previousProjectRoot === undefined) delete process.env.SMITH_PROJECT_CWD;
-    else process.env.SMITH_PROJECT_CWD = previousProjectRoot;
+    if (previousProjectRoot === undefined) delete process.env.HELVE_PROJECT_CWD;
+    else process.env.HELVE_PROJECT_CWD = previousProjectRoot;
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
 
 test("smith-ui payload parser rejects an image header with an unsafe decoded size", () => {
   const projectRoot = mkdtempSync(path.join(tmpdir(), "smith-ui-image-"));
-  const previousProjectRoot = process.env.SMITH_PROJECT_CWD;
-  process.env.SMITH_PROJECT_CWD = projectRoot;
+  const previousProjectRoot = process.env.HELVE_PROJECT_CWD;
+  process.env.HELVE_PROJECT_CWD = projectRoot;
   const pngHeader = Buffer.alloc(24);
   Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).copy(pngHeader);
   pngHeader.write("IHDR", 12, "ascii");
@@ -121,8 +121,8 @@ test("smith-ui payload parser rejects an image header with an unsafe decoded siz
       null,
     );
   } finally {
-    if (previousProjectRoot === undefined) delete process.env.SMITH_PROJECT_CWD;
-    else process.env.SMITH_PROJECT_CWD = previousProjectRoot;
+    if (previousProjectRoot === undefined) delete process.env.HELVE_PROJECT_CWD;
+    else process.env.HELVE_PROJECT_CWD = previousProjectRoot;
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
@@ -130,8 +130,8 @@ test("smith-ui payload parser rejects an image header with an unsafe decoded siz
 test("smith-ui payload parser rejects a project path that symlinks outside the project", () => {
   const projectRoot = mkdtempSync(path.join(tmpdir(), "smith-ui-project-"));
   const externalRoot = mkdtempSync(path.join(tmpdir(), "smith-ui-external-"));
-  const previousProjectRoot = process.env.SMITH_PROJECT_CWD;
-  process.env.SMITH_PROJECT_CWD = projectRoot;
+  const previousProjectRoot = process.env.HELVE_PROJECT_CWD;
+  process.env.HELVE_PROJECT_CWD = projectRoot;
   const pngHeader = Buffer.alloc(24);
   Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).copy(pngHeader);
   pngHeader.write("IHDR", 12, "ascii");
@@ -151,8 +151,8 @@ test("smith-ui payload parser rejects a project path that symlinks outside the p
       null,
     );
   } finally {
-    if (previousProjectRoot === undefined) delete process.env.SMITH_PROJECT_CWD;
-    else process.env.SMITH_PROJECT_CWD = previousProjectRoot;
+    if (previousProjectRoot === undefined) delete process.env.HELVE_PROJECT_CWD;
+    else process.env.HELVE_PROJECT_CWD = previousProjectRoot;
     rmSync(projectRoot, { recursive: true, force: true });
     rmSync(externalRoot, { recursive: true, force: true });
   }
@@ -160,8 +160,8 @@ test("smith-ui payload parser rejects a project path that symlinks outside the p
 
 test("smith-ui payload parser accepts the compact header of a safe VP8L image", () => {
   const projectRoot = mkdtempSync(path.join(tmpdir(), "smith-ui-image-"));
-  const previousProjectRoot = process.env.SMITH_PROJECT_CWD;
-  process.env.SMITH_PROJECT_CWD = projectRoot;
+  const previousProjectRoot = process.env.HELVE_PROJECT_CWD;
+  process.env.HELVE_PROJECT_CWD = projectRoot;
   const webpHeader = Buffer.alloc(25);
   webpHeader.write("RIFF", 0, "ascii");
   webpHeader.write("WEBP", 8, "ascii");
@@ -178,8 +178,8 @@ test("smith-ui payload parser accepts the compact header of a safe VP8L image", 
 
     assert.equal(parsed?.images[0]?.alt, "one pixel");
   } finally {
-    if (previousProjectRoot === undefined) delete process.env.SMITH_PROJECT_CWD;
-    else process.env.SMITH_PROJECT_CWD = previousProjectRoot;
+    if (previousProjectRoot === undefined) delete process.env.HELVE_PROJECT_CWD;
+    else process.env.HELVE_PROJECT_CWD = previousProjectRoot;
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });

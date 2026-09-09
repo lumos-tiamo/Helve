@@ -201,8 +201,8 @@ def test_run_agent_stream_pauses_for_one_user_answer_then_resumes_same_node(tmp_
     class PausingLLM(FakeLLM):
         def __init__(self) -> None:
             self.outputs = [
-                "Which user group is primary?\n<!-- agent-smith:await-user-input -->",
-                "Audience and acceptance signal are agreed.\n<!-- agent-smith:grilling-complete -->",
+                "Which user group is primary?\n<!-- helve:await-user-input -->",
+                "Audience and acceptance signal are agreed.\n<!-- helve:grilling-complete -->",
             ]
 
         async def chat(self, messages, tools=None, prefix_cache_key=None):
@@ -211,7 +211,7 @@ def test_run_agent_stream_pauses_for_one_user_answer_then_resumes_same_node(tmp_
     class CompleteGate:
         async def check(self, output: str, context: dict) -> GateResult:
             assert context["chain_request"] == "research the onboarding requirement"
-            if "<!-- agent-smith:grilling-complete -->" in output:
+            if "<!-- helve:grilling-complete -->" in output:
                 return GateResult("pass", "shared understanding")
             return GateResult("retry", "missing completion")
 
@@ -220,7 +220,7 @@ def test_run_agent_stream_pauses_for_one_user_answer_then_resumes_same_node(tmp_
         SkillNode(
             "grilling",
             CompleteGate(),
-            await_user_input_marker="<!-- agent-smith:await-user-input -->",
+            await_user_input_marker="<!-- helve:await-user-input -->",
         ),
     ])
 
@@ -274,7 +274,7 @@ def test_forced_grill_me_enters_the_requirements_chain() -> None:
     class CompleteLLM(FakeLLM):
         async def chat(self, messages, tools=None, prefix_cache_key=None):
             return ChatResponse(
-                text="Shared understanding recorded.\n<!-- agent-smith:grilling-complete -->"
+                text="Shared understanding recorded.\n<!-- helve:grilling-complete -->"
             )
 
     class CompleteGate:
@@ -898,7 +898,7 @@ def test_run_agent_stream_discards_checkpoint_when_the_paused_node_moved(
     一个步骤后 index 0 变成了那个新节点，于是用户的回答被喂给一个从未提问的节点，
     连 grilling 暂存的提问产出也一并继承了过去。
     """
-    marker = "<!-- agent-smith:await-user-input -->"
+    marker = "<!-- helve:await-user-input -->"
 
     class PausingLLM(FakeLLM):
         async def chat(self, messages, tools=None, prefix_cache_key=None):

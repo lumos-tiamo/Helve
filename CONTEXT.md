@@ -1,4 +1,4 @@
-# Agent-Smith ubiquitous terms
+# Helve ubiquitous terms
 
 This glossary defines the product language for a resident local terminal Agent.
 It is intentionally implementation-independent.
@@ -25,7 +25,7 @@ turning it into a denial.
 
 ## Non-delegable runtime secret
 
-A provider credential or other secret owned by the Agent-Smith runtime itself,
+A provider credential or other secret owned by the Helve runtime itself,
 not by the task the user asked the model to perform. The model cannot obtain or
 use it through an approval capability.
 

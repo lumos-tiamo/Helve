@@ -315,7 +315,7 @@ def _request_pinned(
     parsed: urllib.parse.ParseResult,
     infos: list[tuple[Any, Any, int, str, tuple[Any, ...]]],
     timeout: float,
-    user_agent: str = "AgentSmith/1.0",
+    user_agent: str = "Helve/1.0",
 ) -> tuple[http.client.HTTPConnection, http.client.HTTPResponse]:
     host = parsed.hostname
     assert host is not None

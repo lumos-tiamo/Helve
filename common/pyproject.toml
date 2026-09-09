@@ -1,5 +1,5 @@
 [project]
-name = "agent-smith-common"
+name = "helve-common"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = ["pyyaml>=6.0", "aiosqlite>=0.21"]
@@ -15,41 +15,41 @@ packages = ["common"]
 common = "."
 
 [tool.setuptools.data-files]
-"agent_smith_common/builtin_skills/edit-article" = ["../agents/skills/edit-article/SKILL.md"]
-"agent_smith_common/builtin_skills/coding-understanding" = ["../agents/skills/coding-understanding/SKILL.md"]
-"agent_smith_common/builtin_skills/coding-understanding/references" = ["../agents/skills/coding-understanding/references/evals.md"]
-"agent_smith_common/builtin_skills/coding-planning" = ["../agents/skills/coding-planning/SKILL.md"]
-"agent_smith_common/builtin_skills/coding-planning/references" = ["../agents/skills/coding-planning/references/evals.md"]
-"agent_smith_common/builtin_skills/coding-architecture" = ["../agents/skills/coding-architecture/SKILL.md"]
-"agent_smith_common/builtin_skills/coding-architecture/references" = ["../agents/skills/coding-architecture/references/evals.md"]
-"agent_smith_common/builtin_skills/coding-implementation" = ["../agents/skills/coding-implementation/SKILL.md"]
-"agent_smith_common/builtin_skills/coding-implementation/references" = ["../agents/skills/coding-implementation/references/evals.md"]
-"agent_smith_common/builtin_skills/coding-validation" = ["../agents/skills/coding-validation/SKILL.md"]
-"agent_smith_common/builtin_skills/coding-validation/references" = ["../agents/skills/coding-validation/references/evals.md"]
-"agent_smith_common/builtin_skills/grill-me" = ["../agents/skills/grill-me/SKILL.md"]
-"agent_smith_common/builtin_skills/grill-me/agents" = ["../agents/skills/grill-me/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/grilling" = ["../agents/skills/grilling/SKILL.md"]
-"agent_smith_common/builtin_skills/grilling/agents" = ["../agents/skills/grilling/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/research" = ["../agents/skills/research/SKILL.md"]
-"agent_smith_common/builtin_skills/research/agents" = ["../agents/skills/research/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/ecc-plan" = ["../agents/skills/ecc-plan/SKILL.md"]
-"agent_smith_common/builtin_skills/diagnosing-bugs" = ["../agents/skills/diagnosing-bugs/SKILL.md"]
-"agent_smith_common/builtin_skills/diagnosing-bugs/agents" = ["../agents/skills/diagnosing-bugs/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/diagnosing-bugs/scripts" = ["../agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh"]
-"agent_smith_common/builtin_skills/tdd-workflow" = ["../agents/skills/tdd-workflow/SKILL.md"]
-"agent_smith_common/builtin_skills/tdd-workflow/agents" = ["../agents/skills/tdd-workflow/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/verification-loop" = ["../agents/skills/verification-loop/SKILL.md"]
-"agent_smith_common/builtin_skills/verification-loop/agents" = ["../agents/skills/verification-loop/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/code-review" = ["../agents/skills/code-review/SKILL.md"]
-"agent_smith_common/builtin_skills/code-review/agents" = ["../agents/skills/code-review/agents/openai.yaml"]
-"agent_smith_common/builtin_skills/teach" = [
+"helve_common/builtin_skills/edit-article" = ["../agents/skills/edit-article/SKILL.md"]
+"helve_common/builtin_skills/coding-understanding" = ["../agents/skills/coding-understanding/SKILL.md"]
+"helve_common/builtin_skills/coding-understanding/references" = ["../agents/skills/coding-understanding/references/evals.md"]
+"helve_common/builtin_skills/coding-planning" = ["../agents/skills/coding-planning/SKILL.md"]
+"helve_common/builtin_skills/coding-planning/references" = ["../agents/skills/coding-planning/references/evals.md"]
+"helve_common/builtin_skills/coding-architecture" = ["../agents/skills/coding-architecture/SKILL.md"]
+"helve_common/builtin_skills/coding-architecture/references" = ["../agents/skills/coding-architecture/references/evals.md"]
+"helve_common/builtin_skills/coding-implementation" = ["../agents/skills/coding-implementation/SKILL.md"]
+"helve_common/builtin_skills/coding-implementation/references" = ["../agents/skills/coding-implementation/references/evals.md"]
+"helve_common/builtin_skills/coding-validation" = ["../agents/skills/coding-validation/SKILL.md"]
+"helve_common/builtin_skills/coding-validation/references" = ["../agents/skills/coding-validation/references/evals.md"]
+"helve_common/builtin_skills/grill-me" = ["../agents/skills/grill-me/SKILL.md"]
+"helve_common/builtin_skills/grill-me/agents" = ["../agents/skills/grill-me/agents/openai.yaml"]
+"helve_common/builtin_skills/grilling" = ["../agents/skills/grilling/SKILL.md"]
+"helve_common/builtin_skills/grilling/agents" = ["../agents/skills/grilling/agents/openai.yaml"]
+"helve_common/builtin_skills/research" = ["../agents/skills/research/SKILL.md"]
+"helve_common/builtin_skills/research/agents" = ["../agents/skills/research/agents/openai.yaml"]
+"helve_common/builtin_skills/ecc-plan" = ["../agents/skills/ecc-plan/SKILL.md"]
+"helve_common/builtin_skills/diagnosing-bugs" = ["../agents/skills/diagnosing-bugs/SKILL.md"]
+"helve_common/builtin_skills/diagnosing-bugs/agents" = ["../agents/skills/diagnosing-bugs/agents/openai.yaml"]
+"helve_common/builtin_skills/diagnosing-bugs/scripts" = ["../agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh"]
+"helve_common/builtin_skills/tdd-workflow" = ["../agents/skills/tdd-workflow/SKILL.md"]
+"helve_common/builtin_skills/tdd-workflow/agents" = ["../agents/skills/tdd-workflow/agents/openai.yaml"]
+"helve_common/builtin_skills/verification-loop" = ["../agents/skills/verification-loop/SKILL.md"]
+"helve_common/builtin_skills/verification-loop/agents" = ["../agents/skills/verification-loop/agents/openai.yaml"]
+"helve_common/builtin_skills/code-review" = ["../agents/skills/code-review/SKILL.md"]
+"helve_common/builtin_skills/code-review/agents" = ["../agents/skills/code-review/agents/openai.yaml"]
+"helve_common/builtin_skills/teach" = [
     "../agents/skills/teach/SKILL.md",
     "../agents/skills/teach/GLOSSARY-FORMAT.md",
     "../agents/skills/teach/LEARNING-RECORD-FORMAT.md",
     "../agents/skills/teach/MISSION-FORMAT.md",
     "../agents/skills/teach/RESOURCES-FORMAT.md",
 ]
-"agent_smith_common/builtin_skills/writing-great-skills" = [
+"helve_common/builtin_skills/writing-great-skills" = [
     "../agents/skills/writing-great-skills/SKILL.md",
     "../agents/skills/writing-great-skills/GLOSSARY.md",
 ]

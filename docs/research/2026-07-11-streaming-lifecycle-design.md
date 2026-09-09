@@ -1,4 +1,4 @@
-# Agent-Smith 流式运行终态设计调研：`finish_reason`、SSE 与截断恢复
+# Helve 流式运行终态设计调研：`finish_reason`、SSE 与截断恢复
 
 > 调研日期：2026-07-11  
 > 范围：评估当前 `finish_reason → 有界续写 → agent 终态 → SSE done(status)` 修复，与公开的一手 LLM/Agent 流式接口对照。  
@@ -18,7 +18,7 @@
 
 ## 二、当前实现已经做对了什么
 
-| 层级 | 当前 Agent-Smith 行为 | 判断 |
+| 层级 | 当前 Helve 行为 | 判断 |
 | --- | --- | --- |
 | Provider 响应 | `ChatResponse` 保留兼容 Chat Completions 响应的 `finish_reason`。 | 正确：不要只拿 `message.content`，应保留结束原因。 |
 | Agent loop | 非工具调用的文本若是 `finish_reason == "length"`，累积已有文本并最多续写两次；仍超限时发出 `INCOMPLETE(reason="model_output_limit")`。 | 正确的有界恢复：避免无限循环，也不把半截结果伪装成完成。 |

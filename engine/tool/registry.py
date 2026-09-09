@@ -127,7 +127,7 @@ class ToolRegistry:
         self._authorized_call: ContextVar[
             tuple[str, str | None, ApprovalScope | None] | None
         ] = ContextVar(
-            f"agent_smith_authorized_tool_call_{id(self)}",
+            f"helve_authorized_tool_call_{id(self)}",
             default=None,
         )
 

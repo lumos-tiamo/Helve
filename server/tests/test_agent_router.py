@@ -139,7 +139,7 @@ def test_project_instruction_route_delegates_to_agent_service() -> None:
     class FakeAgentService:
         async def initialize_project_instructions(self, working_dir: str) -> dict:
             calls.append(working_dir)
-            return {"path": "/workspace/project/.smith/SMITH.md", "created": True}
+            return {"path": "/workspace/project/.helve/HELVE.md", "created": True}
 
     app = FastAPI()
     app.include_router(router)
@@ -149,7 +149,7 @@ def test_project_instruction_route_delegates_to_agent_service() -> None:
         response = client.put("/api/agent/project-instructions", json={"working_dir": "/workspace/project"})
 
     assert response.status_code == 200
-    assert response.json() == {"path": "/workspace/project/.smith/SMITH.md", "created": True}
+    assert response.json() == {"path": "/workspace/project/.helve/HELVE.md", "created": True}
     assert calls == ["/workspace/project"]
 
 

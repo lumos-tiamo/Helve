@@ -267,7 +267,7 @@ test("init command creates project instructions once and reports the preserved f
     bridge: {
       initializeProject: async (workingDir: string) => {
         calls.push(workingDir);
-        return { path: `${workingDir}/.smith/SMITH.md`, created: calls.length === 1 };
+        return { path: `${workingDir}/.helve/HELVE.md`, created: calls.length === 1 };
       },
     } as unknown as NodeBridge,
     exit: () => {},
@@ -276,7 +276,7 @@ test("init command creates project instructions once and reports the preserved f
   };
 
   await runShellCommand("/init", context);
-  assert.match(store.getState().statusLine, /Created .+\.smith\/SMITH\.md/);
+  assert.match(store.getState().statusLine, /Created .+\.helve\/HELVE\.md/);
 
   await runShellCommand("/init", context);
   assert.match(store.getState().statusLine, /Already exists:.+not changed/);
@@ -288,7 +288,7 @@ test("init command surfaces the failure reason in the status line", async () => 
   const context = {
     bridge: {
       initializeProject: async () => {
-        throw new Error("permission denied: .smith");
+        throw new Error("permission denied: .helve");
       },
     } as unknown as NodeBridge,
     exit: () => {},
@@ -297,7 +297,7 @@ test("init command surfaces the failure reason in the status line", async () => 
   };
 
   await runShellCommand("/init", context);
-  assert.match(store.getState().statusLine, /Project initialization failed: permission denied: \.smith/);
+  assert.match(store.getState().statusLine, /Project initialization failed: permission denied: \.helve/);
 });
 
 test("model commands add relay-sharing profiles and use bridge contracts", async () => {

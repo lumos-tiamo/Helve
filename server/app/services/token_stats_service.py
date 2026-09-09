@@ -170,7 +170,7 @@ logger = logging.getLogger(__name__)
 
 
 class TokenStatsService:
-    """Persist and aggregate Agent-Smith's local token usage events."""
+    """Persist and aggregate Helve's local token usage events."""
 
     def __init__(
         self,

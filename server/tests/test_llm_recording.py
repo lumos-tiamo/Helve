@@ -38,7 +38,7 @@ def stub_client(monkeypatch: pytest.MonkeyPatch) -> object:
 def test_recording_stays_off_without_the_env_var(
     monkeypatch: pytest.MonkeyPatch, stub_client: object
 ) -> None:
-    monkeypatch.delenv("AGENT_SMITH_RECORD_LLM", raising=False)
+    monkeypatch.delenv("HELVE_RECORD_LLM", raising=False)
 
     client = engine_runtime.LLMClientManager().get_for_config(dict(_CONFIG))
 
@@ -49,7 +49,7 @@ def test_recording_wraps_the_client_and_creates_the_target_dir(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stub_client: object
 ) -> None:
     target = tmp_path / "recordings" / "case.jsonl"
-    monkeypatch.setenv("AGENT_SMITH_RECORD_LLM", str(target))
+    monkeypatch.setenv("HELVE_RECORD_LLM", str(target))
 
     client = engine_runtime.LLMClientManager().get_for_config(dict(_CONFIG))
 
@@ -60,7 +60,7 @@ def test_recording_wraps_the_client_and_creates_the_target_dir(
 def test_recording_blank_env_var_is_treated_as_off(
     monkeypatch: pytest.MonkeyPatch, stub_client: object
 ) -> None:
-    monkeypatch.setenv("AGENT_SMITH_RECORD_LLM", "   ")
+    monkeypatch.setenv("HELVE_RECORD_LLM", "   ")
 
     client = engine_runtime.LLMClientManager().get_for_config(dict(_CONFIG))
 
@@ -76,7 +76,7 @@ def test_gate_turns_do_not_interleave_into_the_chat_recording(
     缓存客户端 —— 分流必须撑得住这种复用。
     """
     target = tmp_path / "case.jsonl"
-    monkeypatch.setenv("AGENT_SMITH_RECORD_LLM", str(target))
+    monkeypatch.setenv("HELVE_RECORD_LLM", str(target))
     monkeypatch.setattr(engine_runtime, "resolve_llm_config", lambda *, usage: dict(_CONFIG))
     monkeypatch.setattr(engine_runtime, "build_llm_client", lambda config: _EchoProvider())
     manager = engine_runtime.LLMClientManager()

@@ -695,7 +695,7 @@ historyDraft: string;      // ← 关键
 
 `exitHistoryBrowsing(state)` 是显式的退出函数——任何非导航按键都要调它，把 `historyIndex` 复位。
 
-历史持久化在 `~/.agent-smith/shell_history.json`。
+历史持久化在 `~/.helve/shell_history.json`。
 
 ### 6.3 一条注释里的坑
 
@@ -1255,10 +1255,10 @@ flowchart LR
 
 ### 13.1 12 个依赖鉴权的测试
 
-在没有 `~/.agent-smith/auth_token` 的容器里会失败，因为它们调用真实的 `localAuthHeaders()`。造一个就绿：
+在没有 `~/.helve/auth_token` 的容器里会失败，因为它们调用真实的 `localAuthHeaders()`。造一个就绿：
 
 ```bash
-mkdir -p ~/.agent-smith && printf token > ~/.agent-smith/auth_token && chmod 600 ~/.agent-smith/auth_token
+mkdir -p ~/.helve && printf token > ~/.helve/auth_token && chmod 600 ~/.helve/auth_token
 ```
 
 **这是环境噪声不是回归**——它们在 `main` 上表现一致。

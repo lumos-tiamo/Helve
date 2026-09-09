@@ -115,7 +115,7 @@
 
 179 个追踪事件，覆盖所有用户交互路径，`/api/telemetry/events` 上报。
 
-## 对 Agent-Smith 的启示
+## 对 Helve 的启示
 
 | QoderWake | 建议 |
 |---|---|
@@ -124,4 +124,4 @@
 | Tiptap 富文本 | 记忆编辑需要时再引入 |
 | Shiki 80+ 语言按需加载 | 代码高亮按需模式值得参考 |
 | 内建 i18n | v0 中文优先，暂不需要 |
-| Ant Design | Agent-Smith 用 shadcn，风格更轻 |
+| Ant Design | Helve 用 shadcn，风格更轻 |

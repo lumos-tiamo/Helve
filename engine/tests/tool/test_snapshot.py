@@ -10,7 +10,7 @@ from engine.tool.snapshot import _MAX_VERSIONS_PER_FILE, FileSnapshot, get_snaps
 
 @pytest.fixture()
 def snap(tmp_path: Path, monkeypatch) -> FileSnapshot:
-    """FileSnapshot writing backups under tmp_path instead of ~/.agent-smith."""
+    """FileSnapshot writing backups under tmp_path instead of ~/.helve."""
     import common.config
 
     monkeypatch.setattr(common.config, "DATA_DIR", tmp_path / "data")

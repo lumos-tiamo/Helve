@@ -110,7 +110,7 @@ def _safe_environment(cwd: str | None) -> dict[str, str]:
 
     Git may execute repository-controlled hooks, filters, and helpers.  Those
     subprocesses must not inherit provider credentials or other service
-    secrets owned by the Agent-Smith runtime.  ``GIT_PAGER``/``GIT_EDITOR``
+    secrets owned by the Helve runtime.  ``GIT_PAGER``/``GIT_EDITOR``
     pin interactive programs to no-ops since our captures are pipes anyway.
     """
     home = os.path.abspath(cwd) if cwd else os.getcwd()
@@ -409,7 +409,7 @@ async def execute(
 
         # Keep the worktree inside the selected repository workspace so the
         # request-level path boundary also covers the new checkout.
-        wt_base = os.path.join(repo_dir, ".agent-smith-worktrees")
+        wt_base = os.path.join(repo_dir, ".helve-worktrees")
         os.makedirs(wt_base, exist_ok=True)
         # Use branch name (sanitized) as directory name
         safe_name = re.sub(r"[^a-zA-Z0-9_-]", "_", branch)

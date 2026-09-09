@@ -1,4 +1,4 @@
-schema: agentsmith.subagent/v1
+schema: helve.subagent/v1
 id: explorer
 name: Explorer
 description: Read-only investigation — search and read the local codebase, report findings

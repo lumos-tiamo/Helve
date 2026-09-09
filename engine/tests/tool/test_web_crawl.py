@@ -58,7 +58,7 @@ def test_robots_policy_selects_specific_user_agent_and_disallows_paths():
         User-agent: *
         Disallow: /private
 
-        User-agent: AgentSmithCrawler
+        User-agent: HelveCrawler
         Allow: /private/public
         Disallow: /private
         Crawl-delay: 2

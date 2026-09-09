@@ -18,7 +18,7 @@ from .host import CommandResult, LocalExecutionEnvironment
 _SANDBOX_EXECUTABLE = "/usr/bin/sandbox-exec"
 _OPTIONAL_ENV_KEYS = ("LANG", "LC_ALL", "TERM", "TZ", "NO_COLOR")
 _CREDENTIAL_DIRECTORIES = frozenset(
-    {".ssh", ".gnupg", ".aws", ".kube", ".agent-smith", ".docker"}
+    {".ssh", ".gnupg", ".aws", ".kube", ".helve", ".docker"}
 )
 _CREDENTIAL_CONFIGS = frozenset({".npmrc", ".pypirc", ".netrc", ".git-credentials"})
 _PRIVATE_KEY_SUFFIXES = frozenset({".pem", ".key", ".p12", ".pfx"})
@@ -36,10 +36,10 @@ _PRIVATE_KEY_NAME_PATTERN = r"([^/]*[-_.])?id_(rsa|dsa|ecdsa|ed25519)([-_.][^/]*
 _PRIVATE_KEY_NAME_RE = re.compile(rf"^{_PRIVATE_KEY_NAME_PATTERN}$")
 _PRIVATE_KEY_PROFILE_PLACEHOLDER = "__PRIVATE_KEY_NAME__"
 _DEFAULT_RUNTIME_SECRET_PATHS = (
-    Path.home() / ".agent-smith" / "config.yaml",
-    Path.home() / ".agent-smith" / "config.yml",
-    Path.home() / ".agent-smith" / "agent" / "config.yaml",
-    Path.home() / ".agent-smith" / "agent" / "config.yml",
+    Path.home() / ".helve" / "config.yaml",
+    Path.home() / ".helve" / "config.yml",
+    Path.home() / ".helve" / "agent" / "config.yaml",
+    Path.home() / ".helve" / "agent" / "config.yml",
 )
 
 
@@ -73,7 +73,7 @@ class MacOSSeatbeltEnvironment:
     By default the workspace is the only writable location, credential data
     and Git metadata remain protected, and network access is denied. A matching
     approved host-command capability creates a copy with temporary host access
-    while still denying Agent-Smith runtime credential paths and inherited
+    while still denying Helve runtime credential paths and inherited
     service credentials. A preflight rejects hard-link aliases that a
     path-based profile cannot distinguish. This backend fails closed on a
     non-macOS host or when ``sandbox-exec`` is unavailable.
@@ -218,7 +218,7 @@ class MacOSSeatbeltEnvironment:
         #"/(.*/)?\.env($|\..*)")))
 (deny file-read* file-write*
     (regex (string-append "^" (regex-quote (param "WORKSPACE"))
-        #"/(.*/)?\.(ssh|gnupg|aws|kube|agent-smith|docker)(/|$)")))
+        #"/(.*/)?\.(ssh|gnupg|aws|kube|helve|docker)(/|$)")))
 (deny file-read* file-write*
     (regex (string-append "^" (regex-quote (param "WORKSPACE"))
         #"/(.*/)?\.config/(gh|gcloud)(/|$)")))

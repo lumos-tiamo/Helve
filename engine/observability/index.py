@@ -55,15 +55,15 @@ class ObservabilityRetentionPolicy:
     def from_environment(cls) -> "ObservabilityRetentionPolicy":
         return cls(
             max_completed_runs=_optional_positive_env(
-                "AGENT_SMITH_OBSERVABILITY_MAX_RUNS",
+                "HELVE_OBSERVABILITY_MAX_RUNS",
                 _DEFAULT_MAX_COMPLETED_RUNS,
             ),
             max_age_days=_optional_positive_env(
-                "AGENT_SMITH_OBSERVABILITY_MAX_AGE_DAYS",
+                "HELVE_OBSERVABILITY_MAX_AGE_DAYS",
                 _DEFAULT_MAX_AGE_DAYS,
             ),
             max_bytes=_optional_positive_env(
-                "AGENT_SMITH_OBSERVABILITY_MAX_BYTES",
+                "HELVE_OBSERVABILITY_MAX_BYTES",
                 _DEFAULT_MAX_BYTES,
             ),
         )

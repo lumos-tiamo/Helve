@@ -50,7 +50,7 @@ skills2set/     内置技能定义
 
 ### 核心差异
 
-| 维度 | Agent-Smith | OpenHanako |
+| 维度 | Helve | OpenHanako |
 |---|---|---|
 | **前端技术** | 原生 SwiftUI (macOS only) | Electron 42 (跨平台) |
 | **后端语言** | Python (FastAPI + uv) | TypeScript (Hono + Node) |
@@ -65,7 +65,7 @@ skills2set/     内置技能定义
 
 ### 架构图对比
 
-**Agent-Smith 五层架构**:
+**Helve 五层架构**:
 ```
 macos-app/ ──HTTP/SSE──→ server/ ──import──→ engine/ ──import──→ common/
                             │                    ↑
@@ -114,7 +114,7 @@ const fp = computeFingerprint(fpKeys);  // crypto.createHash("md5")
 
 所有编译通过 `_compactLLM()` 统一调用 (utility_large 模型, temperature=0.3, timeout 60s)，Prompt 严格约束只记录用户画像（谁、喜好、关注），不记录执行细节/文件名/工具/命令。
 
-#### Agent-Smith 目前的做法
+#### Helve 目前的做法
 
 **源文件**: `engine/memory/dream.py` (241 行)
 
@@ -175,9 +175,9 @@ request(type, payload, options)  // 发请求，等第一个非 SKIP 的 handler
 ```
 带 30s 超时的 `Promise.race`，多个 handler 按注册顺序尝试。
 
-#### Agent-Smith 目前的做法
+#### Helve 目前的做法
 
-**Agent-Smith 没有事件总线**。所有通信都是直接函数调用：
+**Helve 没有事件总线**。所有通信都是直接函数调用：
 - Server services 直接调用 engine 函数 (`engine_reply`, `engine_reply_stream`)
 - 团队消息是 `TeamService` 顺序遍历目标 Agent 逐个调用
 - 插件触发是 polling/webhook 推送到 handler，没有统一的消息分发机制
@@ -238,7 +238,7 @@ const accessLevel = (entry.source === "builtin" || entry.trust === "full-access"
 
 插件可贡献 10 种类型：tools / skills / commands / routes / extensions / providers / agents / pages / widgets / settingsTabs。
 
-#### Agent-Smith 目前的做法
+#### Helve 目前的做法
 
 **源文件**: `engine/plugin/` (4 个文件, ~252 行)
 
@@ -261,7 +261,7 @@ const accessLevel = (entry.source === "builtin" || entry.trust === "full-access"
 1. **在 `PluginManifest` 中增加 `trust_level` 字段**：`"restricted"` (默认) / `"full-access"`
 2. **定义能力表**：在 `registry.py` 中定义 `CAPABILITY_TABLE`，restricted 插件只允许注册 tools 和 skills，full-access 允许全部能力
 3. **在 `loader.py` 中增加权限检查**：加载 handler 前校验 manifest 的 trust_level，restricted 插件的 handler 不允许 import 敏感模块 (os, subprocess, importlib 等)
-4. **增加 enable/disable 开关**：在 `PluginRegistry` 中维护 `disabled_plugins: set[str]`，持久化到 `~/.agent-smith/config.yaml`
+4. **增加 enable/disable 开关**：在 `PluginRegistry` 中维护 `disabled_plugins: set[str]`，持久化到 `~/.helve/config.yaml`
 5. **增加加载超时**：`load_handler()` 添加 asyncio.wait_for 包装，15s 超时
 6. **增加生命周期钩子**：manifest 中声明 `on_load` / `on_unload`，在插件启用/禁用时调用
 
@@ -299,7 +299,7 @@ OpenHanako 实现了 **fire-and-forget 非阻塞委派**：
 
 支持 `agent="?"` 查询团队 Agent 列表，通过 `agent` 参数指定目标 Agent。
 
-#### Agent-Smith 目前的做法
+#### Helve 目前的做法
 
 **源文件**: `server/app/services/team_service.py` (196 行)
 
@@ -366,9 +366,9 @@ const ADAPTER_REGISTRY = {
 
 **媒体处理**：每个平台走各自原生接口上传媒体，仅远程 fallback 走 `/api/bridge/media/:token` 临时文件路由。
 
-#### Agent-Smith 目前的做法
+#### Helve 目前的做法
 
-Agent-Smith 目前没有 IM 桥接。Agent 只能通过 macOS App → Server 交互。
+Helve 目前没有 IM 桥接。Agent 只能通过 macOS App → Server 交互。
 
 `engine/plugin/trigger.py` 中有 `WebhookTrigger` 可以接收外部推送，但这是插件级的事件处理，不是 IM 会话桥接。
 
@@ -389,13 +389,13 @@ Agent-Smith 目前没有 IM 桥接。Agent 只能通过 macOS App → Server 交
 2. **消息标准化**：定义 `BridgeMessage` 数据类 (sender, content, attachments, platform, timestamp)，所有适配器输出统一格式
 3. **与 EventBus 集成**：适配器收到消息后 emit `MESSAGE_RECEIVED` 事件，由 EventBus 路由到对应的 Agent
 4. **出站清洗**：在 `bridge_manager.py` 中实现输出清洗，去除内部标签、截断过长回复、适配各平台的消息长度限制
-5. **配置存储**：桥接凭证存储在 `~/.agent-smith/config.yaml` 的 `bridges` 节下，按平台分组
+5. **配置存储**：桥接凭证存储在 `~/.helve/config.yaml` 的 `bridges` 节下，按平台分组
 
 ---
 
 ## 4. 核心区别总结
 
-| 维度 | Agent-Smith | OpenHanako |
+| 维度 | Helve | OpenHanako |
 |---|---|---|
 | **产品定位** | 企业级 Agent 工作台 — Agent 有模板、有角色边界、有质量门禁 | 个人 AI 陪伴助理 — 强调人格、情感、记忆连续性 |
 | **执行模型** | 四层嵌套 (SkillChain DAG → 门禁 → ReAct → 工具调用)，12 个质量门禁 | 单层 ReAct (Pi SDK agent loop)，LLM 自判断质量 |
@@ -407,7 +407,7 @@ Agent-Smith 目前没有 IM 桥接。Agent 只能通过 macOS App → Server 交
 
 ### 各有所长
 
-- **Agent-Smith 优势**：执行质量可控（12 门禁 + 回溯机制），分层架构清晰（五层单向依赖），企业级安全（ToolGuard + secrets 过滤），技能自进化（SkillStore + rubric 评分）
+- **Helve 优势**：执行质量可控（12 门禁 + 回溯机制），分层架构清晰（五层单向依赖），企业级安全（ToolGuard + secrets 过滤），技能自进化（SkillStore + rubric 评分）
 - **OpenHanako 优势**：记忆系统成熟（时间分层 + 指纹缓存），多平台触达（5 IM 桥接），插件生态完整（二级权限 + 10 种贡献类型 + 热操作），异步协作（fire-and-forget subagent）
 
 ---
@@ -418,7 +418,7 @@ Agent-Smith 目前没有 IM 桥接。Agent 只能通过 macOS App → Server 交
 
 OpenHanako 实现了基于 macOS Accessibility API 的桌面自动化能力，可以控制其他应用窗口、点击按钮、输入文本。这是一个很有想象力的功能，但暂不借鉴，原因：
 - 涉及系统级权限申请，安全风险大
-- Agent-Smith 的 macOS App 是 SwiftUI 原生应用，已经可以通过 Apple 框架直接集成系统能力
+- Helve 的 macOS App 是 SwiftUI 原生应用，已经可以通过 Apple 框架直接集成系统能力
 - 桌面自动化的稳定性依赖 UI 结构，容易因应用更新而失效
 - 可作为未来独立插件开发，不需要改动核心架构
 
@@ -426,7 +426,7 @@ OpenHanako 实现了基于 macOS Accessibility API 的桌面自动化能力，�
 
 ### 人格/角色扮演系统
 
-OpenHanako 有丰富的人格系统 (`identity.md` + `ishiki.md` 意识文件)，支持情感状态、内省标签 (`<mood>`, `<pulse>`, `<reflect>`, `<think>`)。Agent-Smith 定位企业 Agent，不需要拟人化情感：
+OpenHanako 有丰富的人格系统 (`identity.md` + `ishiki.md` 意识文件)，支持情感状态、内省标签 (`<mood>`, `<pulse>`, `<reflect>`, `<think>`)。Helve 定位企业 Agent，不需要拟人化情感：
 - Agent 角色由 `role.md` + `style.md` 定义，足够覆盖工作场景
 - 情感标签会增加 token 消耗且对工作输出没有帮助
 - 企业场景更需要可预测性和专业性，而非个性化

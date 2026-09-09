@@ -126,7 +126,7 @@ TDD should initially end at `READY_FOR_REVIEW`; it should not silently consume
 the review chain. An automatic-review policy can be considered later as an
 explicit product setting.
 
-## Implementation constraints for Agent-Smith
+## Implementation constraints for Helve
 
 - Keep the existing `SkillChain` engine. It provides sequential nodes,
   conditions, gates, bounded backtracking, and checkpoints; this change adds a

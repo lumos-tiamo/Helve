@@ -1,4 +1,4 @@
-/** Persistent input history — a JSON string array at ~/.agent-smith/shell_history.json. */
+/** Persistent input history — a JSON string array at ~/.helve/shell_history.json. */
 
 import { randomUUID } from "node:crypto";
 import { closeSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -19,7 +19,7 @@ function redactHistory(text: string): string {
 }
 
 function historyPath(): string {
-  return path.join(homedir(), ".agent-smith", "shell_history.json");
+  return path.join(homedir(), ".helve", "shell_history.json");
 }
 
 export function loadHistory(file = historyPath()): string[] {

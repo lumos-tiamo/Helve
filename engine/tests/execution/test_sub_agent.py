@@ -32,7 +32,7 @@ SHIPPED_SUBAGENTS = ROOT / "agents" / "subagents"
 
 def _write_type(directory: Path, spec_id: str, **overrides: object) -> Path:
     fields = {
-        "schema": "agentsmith.subagent/v1",
+        "schema": "helve.subagent/v1",
         "id": spec_id,
         "name": spec_id.title(),
         "description": f"{spec_id} description",
@@ -189,7 +189,7 @@ def test_malformed_type_fails_loudly(tmp_path: Path) -> None:
 
 def test_type_without_tools_is_rejected(tmp_path: Path) -> None:
     (tmp_path / "toolless.yaml").write_text(
-        "schema: agentsmith.subagent/v1\nid: toolless\nname: T\n"
+        "schema: helve.subagent/v1\nid: toolless\nname: T\n"
         "description: d\nprompt: p\ntools: []\n",
         encoding="utf-8",
     )

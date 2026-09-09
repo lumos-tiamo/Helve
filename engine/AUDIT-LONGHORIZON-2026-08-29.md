@@ -115,7 +115,7 @@ CLAUDE.md §9 测试基线（现为 engine 1211 / server 247+5 skipped）、§9 
 - **机制**：durable 满载时 review_source ≈ 10k(existing) + 24k(source) > 32k，`_truncate_source` 保头保尾——被省略的中段**按构造全部落在证据块内**。守卫用完整 source 建索引所以放行，reviewer 在可见文本里找不到引文 → 按 HARD FAIL 判 fabrication → rejected（不计 deferred、不 cooldown、不跳批）→ 每回合 ~6 次 LLM 调用无限重试。
 - **补丁**：分段限额——PRIOR ACCEPTED MEMORY 可截，SELECTED NEW EVIDENCE 一个字符不许截（它是 quote 校验的 ground truth）；或 `_MAX_REVIEW_SOURCE_CHARS` ≥ 两部分预算之和。补"双满载时 reviewer 看得到全部证据行"测试。
 
-### 7. `~/.agent-smith` 快照 git 仓库无界增长，commit 永不触发 gc
+### 7. `~/.helve` 快照 git 仓库无界增长，commit 永不触发 gc
 - **位置**：`engine/memory/_snapshot.py:34`（TRACKED_VIEWS 含 recent.jsonl）、`:53-60`（同步 subprocess）
 - **机制**：每次接受写入/sanitize/Dream 前后都全量提交 recent.jsonl（数 MB 级新松散 blob）；git 操作只有 init/add/commit/log/checkout，实测 commit 不触发 auto-gc——一年可达 GB 级、objects/ 十万文件，且同步 `subprocess.run`（15s 上限）跑在事件循环线程上，越大越卡。注意：被回收证据可从 git 历史恢复是**测试锁定的故意设计**（`test_memory_snapshot.py:247`），补丁不得破坏可恢复语义。
 - **补丁**：Dream 周期里低频跑 `git gc --auto`（沿用 _RUN_CONFIG/超时/失败仅告警）；评估 recent.jsonl 只在 Dream 回收前后两次快照中提交。

@@ -33,7 +33,7 @@ SUPPORTED_PROTOCOL_VERSIONS = {
     "2025-03-26",
     "2024-11-05",
 }
-CLIENT_INFO = {"name": "agent-smith", "version": "0.2.0"}
+CLIENT_INFO = {"name": "helve", "version": "0.2.0"}
 ```
 
 **声明最新版，接受四个版本**。MCP 协议演进较快，server 的实现分布在多个版本上，只接受最新版会让大部分现成 server 用不了。
@@ -117,7 +117,7 @@ flowchart LR
     A["父进程环境<br/>（含 API keys、DB 密码…）"] --> B{"白名单过滤"}
     B -->|"PATH"| C["子进程环境"]
     B -->|"LANG LC_ALL LC_CTYPE<br/>TERM TZ NO_COLOR"| C
-    B -.->|"AWS_SECRET_ACCESS_KEY<br/>AGENTSMITH_LLM_API_KEY<br/>其余全部"| D["丢弃"]
+    B -.->|"AWS_SECRET_ACCESS_KEY<br/>HELVE_LLM_API_KEY<br/>其余全部"| D["丢弃"]
     E["配置里的 env:"] -->|"update（可覆盖）"| C
 
     style D fill:#ffcdd2
@@ -247,7 +247,7 @@ _STDIO_DEAD_CONNECTION_MESSAGES = frozenset({
 
 ## 5. 三个 JSON-RPC 方法
 
-Agent-Smith 只用 MCP 协议的一个子集：
+Helve 只用 MCP 协议的一个子集：
 
 | 方法 | 类型 | 用途 |
 |---|---|---|
@@ -268,7 +268,7 @@ sequenceDiagram
 
     C->>T: connect()
     T->>S: 建立 stdio 子进程或 HTTP 连接
-    C->>S: initialize<br/>protocolVersion 2025-11-25<br/>capabilities {}<br/>clientInfo agent-smith/0.2.0
+    C->>S: initialize<br/>protocolVersion 2025-11-25<br/>capabilities {}<br/>clientInfo helve/0.2.0
     S-->>C: protocolVersion
     C->>C: 校验：必须是字符串且在 4 个支持版本里
     alt 版本不支持
@@ -1253,7 +1253,7 @@ def to_openai_schemas(self, tools, *, prefix="mcp") -> list[dict]:
 |---|---|
 | 声明协议版本 | `2025-11-25` |
 | 接受协议版本 | 4 个（2024-11-05 起） |
-| 客户端标识 | `agent-smith` / `0.2.0` |
+| 客户端标识 | `helve` / `0.2.0` |
 | 单条消息上限 | 1 MB |
 | 整流上限 | 64 MB |
 | 请求墙钟 | 600 秒 |
@@ -1315,7 +1315,7 @@ Streamable HTTP 的 server 可以在响应里给一个 `Mcp-Session-Id`，之后
 
 ```mermaid
 flowchart TD
-    A["1. 在 ~/.agent-smith/agent/config.yaml<br/>的 mcp_servers 里加一条"] --> B["2. 重开会话（连接是会话级的）"]
+    A["1. 在 ~/.helve/agent/config.yaml<br/>的 mcp_servers 里加一条"] --> B["2. 重开会话（连接是会话级的）"]
     B --> C["3. /mcp 查看是否连上、注册了哪些工具"]
     C --> D{"连上了吗"}
     D -->|"否"| E["看 server 日志<br/>连接错误会被 logger.exception 记下"]

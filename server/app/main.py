@@ -150,7 +150,7 @@ async def lifespan(app: FastAPI):
     await close_db()
 
 
-app = FastAPI(title="Agent-Smith Server", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="Helve Server", version="0.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -208,5 +208,5 @@ async def health():
         "version": "0.2.0",
         "started_at": _STARTED_AT,
         "stale": _running_stale_code(),
-        "nonce": os.environ.get("SMITH_SERVER_NONCE") or None,
+        "nonce": os.environ.get("HELVE_SERVER_NONCE") or None,
     }

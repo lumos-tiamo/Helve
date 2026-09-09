@@ -23,7 +23,7 @@ from engine.tool.interface import ToolCall, ToolDefinition
 
 _DISABLE_VALUES = frozenset({"0", "false", "off", "disabled", "disable", "no"})
 _CURRENT_FACT_GATE: ContextVar[FactGate | None] = ContextVar(
-    "agent_smith_fact_gate",
+    "helve_fact_gate",
     default=None,
 )
 _STATE_CHANGING_SHELL_KEY = "__state_changing_shell__"
@@ -199,7 +199,7 @@ def use_fact_gate(gate: FactGate | None) -> Iterator[None]:
 
 
 def _enabled_from_env() -> bool:
-    raw = os.getenv("AGENT_SMITH_FACT_GATE", "on").strip().lower()
+    raw = os.getenv("HELVE_FACT_GATE", "on").strip().lower()
     return raw not in _DISABLE_VALUES
 
 

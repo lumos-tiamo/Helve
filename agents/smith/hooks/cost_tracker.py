@@ -80,7 +80,7 @@ class CostTrackerHook(StopHook):
             "estimated_cost_usd": round(cost_usd, 6) if cost_usd is not None else None,
         }
 
-        # 保存到 ~/.agent-smith/metrics/costs.jsonl
+        # 保存到 ~/.helve/metrics/costs.jsonl
         try:
             await self._save_cost_record(cost_record)
         except Exception as e:

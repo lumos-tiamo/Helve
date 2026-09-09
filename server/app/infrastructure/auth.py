@@ -1,7 +1,7 @@
-"""Local bearer-token authentication for the Agent-Smith API.
+"""Local bearer-token authentication for the Helve API.
 
 The server generates a random token on first startup and persists it to
-~/.agent-smith/auth_token (mode 0600).  Every /api/* request must carry
+~/.helve/auth_token (mode 0600).  Every /api/* request must carry
 ``Authorization: Bearer <token>``.  The health endpoint is exempt.
 
 The shell (or any local client) reads that file to authenticate.

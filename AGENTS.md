@@ -10,7 +10,7 @@ its directory holds a top-level `SKILL.md`.
 
 ## 1. What This Project Is
 
-Agent-Smith is a local-first personal assistant Agent workbench that runs in the terminal.
+Helve is a local-first personal assistant Agent workbench that runs in the terminal.
 
 - Smith is the single, always-on Agent
 - Smith uses the skill system to switch workflows per task type
@@ -18,7 +18,7 @@ Agent-Smith is a local-first personal assistant Agent workbench that runs in the
 
 One-line:
 
-> Agent-Smith is a local-first Agent workbench. Smith is your single resident
+> Helve is a local-first Agent workbench. Smith is your single resident
 > assistant — it keeps context, accumulates memory, and switches workflows via skills.
 
 ## 2. Current Priority
@@ -102,14 +102,14 @@ Rules:
 - New capabilities → add skills, not new agents
 
 `common/paths.py` is the single source of truth for the runtime data root
-(`~/.agent-smith`, enforced `0o700`/`0o600`). `engine/safety/tool_guard.py`
+(`~/.helve`, enforced `0o700`/`0o600`). `engine/safety/tool_guard.py`
 anchors its non-bypassable platform-write protection on it.
 
 ## 6. Files That Matter
 
 | Area | Key Files |
 |---|---|
-| Terminal entry | `shell/bin/smith.js` → `shell/src/index.tsx` |
+| Terminal entry | `shell/bin/helve.js` → `shell/src/index.tsx` |
 | Backend spawn | `shell/src/dev-server.ts` (runs `uv run uvicorn app.main:app`) |
 | Engine assembly | `server/app/services/engine_runtime.py` |
 | Agent lifecycle | `server/app/services/agent_profile_service.py` |
@@ -134,7 +134,7 @@ id (`SMITH_TEMPLATE_ID` in `engine/llm/model_config.py`, `role:` in
 templates have been removed; optional skills can still be installed into Smith's
 runtime profile.
 
-Skills that ship with Smith are mirrored into `~/.agent-smith/builtin/skills/`,
+Skills that ship with Smith are mirrored into `~/.helve/builtin/skills/`,
 discovered by scanning `agents/skills/` for directories holding a `SKILL.md`.
 A wheel install ships them through `[tool.setuptools.data-files]` in
 `common/pyproject.toml`, which needs one entry per skill — a test asserts that
