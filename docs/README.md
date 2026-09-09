@@ -144,7 +144,7 @@ graph LR
   session/无 profile 记录）。它不是第二个常驻 Agent，也不构成多 Agent 路由。
   **注意**：该能力已实现但未列入 profile 的 `tools.enabled`，默认对模型不可见——
   见 [24 · 子 Agent 委派](subsystems/24-子Agent委派.md)开头的状态说明。
-- 记忆是两个整体注入的视图，**没有**查询期检索、索引或 embedding。曾有的 episode
+- `context.md` 整份注入；`durable.md` 走查询期检索（`engine/memory/retrieval`）。曾有的 episode
   与向量层已于 `b71be4b`（2026-08-08）移除。
 - Shell 是 Ink/React 终端客户端；`main` 上没有桌面端。
 - Server 注册 `agent` 与 `config` 两组带鉴权的本地 API，外加一个免鉴权的

@@ -7,8 +7,11 @@ Two compilation targets:
 
 ``durable.md`` has no time window: each run merges new evidence into the
 existing document, so a fact survives until it is corrected, superseded, or
-evicted for budget. Both views are injected in full — there is no query-time
-retrieval layer, and therefore no index and no embeddings.
+evicted for budget. ``durable.md`` is no longer injected in full: since
+``engine.memory.retrieval`` landed, the rendered view is split into bullets and
+ranked against the turn's request, and only what earns its place is injected.
+Compilation is unchanged by that — it still writes the whole document; narrowing
+happens at read time, in the prompt assembler.
 
 Fingerprint caching: MD5 of input keys. Same input → skip compilation.
 """

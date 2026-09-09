@@ -158,7 +158,7 @@ provider / LLM → ExecutionEvent → RunStateStore + observability + memory hoo
 
 ### `memory/`：将长期上下文视为编译产物，而非原始聊天备份
 
-`memory/` 把清洗后的事件和结构化候选追加到 `memory/recent.jsonl`，再通过 compiler、reviewer 和确定性 writer 形成两个受控视图：用户级 `context.md` 与项目级 `memory/durable.md`。两个视图均有字符预算，并在后续请求中整份注入；不存在查询时检索、FTS、向量索引或 episode 层。maintenance 负责编译/Dream 调度和失败可见性，Dream 只做安全清洗与已消费证据前缀的可恢复回收。
+`memory/` 把清洗后的事件和结构化候选追加到 `memory/recent.jsonl`，再通过 compiler、reviewer 和确定性 writer 形成两个受控视图：用户级 `context.md` 与项目级 `memory/durable.md`。两个视图均有字符预算。`context.md` 整份注入；`durable.md` 在装配 prompt 时由 `memory/retrieval` 按 bullet 切分并对当轮请求排序，只注入排在前面的部分，任一失败路径退回整份注入。没有 FTS、没有外部向量索引、没有 episode 层。maintenance 负责编译/Dream 调度和失败可见性，Dream 只做安全清洗与已消费证据前缀的可恢复回收。
 
 | 项目 | 说明 |
 | --- | --- |

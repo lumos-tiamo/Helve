@@ -3,8 +3,9 @@
 Provides:
   - save_conversation_memory(): append events + trigger compilation/dream
 
-There is no query-time retrieval here: both rendered views are budget-capped
-and injected whole, so nothing needs to be searched or ranked.
+There is no retrieval *here*: this module only appends evidence and triggers
+compilation.  Query-time selection over the compiled view lives in
+``engine.memory.retrieval`` and runs in the prompt assembler.
 """
 
 from __future__ import annotations
