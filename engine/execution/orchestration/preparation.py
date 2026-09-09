@@ -408,6 +408,9 @@ async def prepare_runtime(
         _runtime_prompt_context(runtime, identity),
         working_dir=working_dir,
         memory_text=memory_text,
+        # The turn's own request is the retrieval query: memory is selected for
+        # what is being asked now, not for the session in general.
+        memory_query=request.message,
         runtime_guidance=identity.prompt,
         eval_guidance=eval_guidance,
         runtime_control=initial_runtime_control_prompt(),

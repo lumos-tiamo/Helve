@@ -13,6 +13,7 @@ from .budget import estimate_tokens
 if TYPE_CHECKING:
     from engine.skill.registry import SkillRegistry
     from engine.tool.registry import ToolRegistry
+    from engine.memory.retrieval import Retrieval
 
 
 _SEPARATOR = "\n\n---\n\n"
@@ -208,6 +209,13 @@ class AssembledPrompt:
 class PromptAssembler:
     """Assemble Smith's system prompt from an agent profile directory."""
 
+    def __init__(self) -> None:
+        # What memory retrieval decided on the most recent build_layers call.
+        # Declared here so a caller can read it without guessing whether the
+        # attribute exists yet, and so the observability layer has one place to
+        # find the evidence for "did narrowing actually save anything".
+        self.last_retrieval: "Retrieval | None" = None
+
     def assemble(
         self,
         agent_dir: Path,
@@ -217,6 +225,7 @@ class PromptAssembler:
         max_tokens: int = 100_000,
         working_dir: Path | None = None,
         memory_text: str | None = None,
+        memory_query: str = "",
         runtime_guidance: str = "",
         eval_guidance: str = "",
         runtime_control: str = "",
@@ -231,6 +240,7 @@ class PromptAssembler:
             max_tokens=max_tokens,
             working_dir=working_dir,
             memory_text=memory_text,
+            memory_query=memory_query,
             runtime_guidance=runtime_guidance,
             eval_guidance=eval_guidance,
             runtime_control=runtime_control,
@@ -246,6 +256,7 @@ class PromptAssembler:
         max_tokens: int = 100_000,
         working_dir: Path | None = None,
         memory_text: str | None = None,
+        memory_query: str = "",
         runtime_guidance: str = "",
         eval_guidance: str = "",
         runtime_control: str = "",
@@ -259,6 +270,7 @@ class PromptAssembler:
             context,
             working_dir=working_dir,
             memory_text=memory_text,
+            memory_query=memory_query,
             runtime_guidance=runtime_guidance,
             eval_guidance=eval_guidance,
             runtime_control=runtime_control,
@@ -326,6 +338,7 @@ class PromptAssembler:
         context: dict,
         working_dir: Path | None = None,
         memory_text: str | None = None,
+        memory_query: str = "",
         runtime_guidance: str = "",
         eval_guidance: str = "",
         runtime_control: str = "",
@@ -473,6 +486,17 @@ class PromptAssembler:
                 if memory_dir.is_dir()
                 else ""
             )
+        # Query-time selection replaces whole-document injection.  Imported here
+        # rather than at module scope for the same reason sanitize_memory_text
+        # below is: engine.memory reaches back into engine.context.
+        from engine.memory.retrieval import retrieve_memory
+
+        # Retrieval only ever narrows.  Every failure path inside returns the
+        # document untouched, so the worst case is exactly the behaviour that
+        # shipped before it -- a dropped bullet is invisible to the model, and
+        # invisible memory loss is worse than a large prompt.
+        self.last_retrieval = retrieve_memory(durable_memory, memory_query)
+        durable_memory = self.last_retrieval.text
         has_memory = bool(durable_memory)
         memory_governance = (
             "## Memory Governance\n"
