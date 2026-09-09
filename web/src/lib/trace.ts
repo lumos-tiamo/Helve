@@ -55,22 +55,25 @@ export function buildWaterfall(events: TraceEvent[]): { spans: Span[]; totalMs: 
   const last = parseTime(final.timestamp);
   const totalMs = Math.max(1, last - origin);
 
-  const open: { name: string; startMs: number; index: number; approval: boolean }[] = [];
+  // Keyed by the provider's call id.  Results are paired on that, never on the
+  // tool name: a gated call emits an intermediate result carrying only the id,
+  // and a run that calls the same tool twice makes name-matching ambiguous
+  // anyway.  Verified against a live trace, not assumed.
+  const open = new Map<
+    string,
+    { name: string; startMs: number; index: number; approval: boolean }
+  >();
   const spans: Span[] = [];
-  let approvalPending = false;
 
   for (const event of timed) {
     const at = parseTime(event.timestamp) - origin;
 
     if (event.type === "tool_call_start") {
-      open.push({
-        name: asString(event.data.name) || "(unnamed tool)",
-        startMs: at,
-        index: spans.length,
-        approval: false,
-      });
+      const name = asString(event.data.name) || "(unnamed tool)";
+      const id = asString(event.data.id) || `anon-${spans.length}`;
+      open.set(id, { name, startMs: at, index: spans.length, approval: false });
       spans.push({
-        name: asString(event.data.name) || "(unnamed tool)",
+        name,
         startMs: at,
         durationMs: Math.max(0, totalMs - at),
         ok: null,
@@ -80,41 +83,56 @@ export function buildWaterfall(events: TraceEvent[]): { spans: Span[]; totalMs: 
       continue;
     }
 
-    if (event.type === "awaiting_input") {
-      approvalPending = true;
-      const current = open[open.length - 1];
-      if (current) current.approval = true;
-      continue;
-    }
-
     if (event.type === "tool_call_result") {
-      const name = asString(event.data.name);
-      const index = findOpen(open, name);
-      if (index < 0) continue;
-      const [entry] = open.splice(index, 1);
+      const entry = resolveOpen(open, event.data);
       if (!entry) continue;
+
+      // One call emits several results and only the last is the outcome: a
+      // fact-gate preflight and an approval block both come first. Closing the
+      // span on either records a properly gated write as an instant one, and
+      // loses the fact that it waited for a human at all.
+      if (event.data.approval_required) {
+        entry.approval = true;
+        continue;
+      }
+      if (event.data.preflight) continue;
+
       const ok = event.data.ok === undefined ? !event.data.error : Boolean(event.data.ok);
       spans[entry.index] = {
         name: entry.name,
         startMs: entry.startMs,
         durationMs: Math.max(0, at - entry.startMs),
         ok,
-        waitedForApproval: entry.approval || approvalPending,
-        detail: asString(event.data.error) || asString(event.data.summary),
+        waitedForApproval: entry.approval,
+        detail: asString(event.data.error) || asString(event.data.reason),
       };
-      approvalPending = false;
+      for (const [key, value] of open) {
+        if (value === entry) {
+          open.delete(key);
+          break;
+        }
+      }
     }
   }
 
   return { spans, totalMs };
 }
 
-function findOpen(open: { name: string }[], name: string): number {
-  if (!name) return open.length - 1;
-  for (let index = open.length - 1; index >= 0; index -= 1) {
-    if (open[index]?.name === name) return index;
+type OpenCall = { name: string; startMs: number; index: number; approval: boolean };
+
+/** By id first; fall back to the newest open call so an id-less trace still charts. */
+function resolveOpen(
+  open: Map<string, OpenCall>,
+  data: Record<string, unknown>,
+): OpenCall | undefined {
+  const id = asString(data.id);
+  if (id && open.has(id)) return open.get(id);
+  const name = asString(data.name);
+  let fallback: OpenCall | undefined;
+  for (const entry of open.values()) {
+    if (!name || entry.name === name) fallback = entry;
   }
-  return open.length - 1;
+  return fallback;
 }
 
 /**
