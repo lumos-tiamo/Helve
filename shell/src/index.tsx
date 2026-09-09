@@ -128,15 +128,21 @@ function HeroPanel() {
           </Box>
           <Box gap={3} marginTop={1}>
             <Box flexDirection="column">
-              {HELVE_LOGO.map((line) => (
-                <Text color={ACCENT} key={line}>
+              {/* Row index, not content: ASCII art repeats lines — the haft of
+                  the mark is two identical rows — and keying on the string
+                  makes React drop the duplicate.  These arrays are static and
+                  never reordered, so the index is the stable identity. */}
+              {HELVE_LOGO.map((line, row) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static art, see above
+                <Text color={ACCENT} key={row}>
                   {line}
                 </Text>
               ))}
             </Box>
             <Box flexDirection="column" justifyContent="center">
-              {HELVE_MARK.map((line) => (
-                <Text color={ACCENT} key={line}>
+              {HELVE_MARK.map((line, row) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static art, see above
+                <Text color={ACCENT} key={row}>
                   {line}
                 </Text>
               ))}
