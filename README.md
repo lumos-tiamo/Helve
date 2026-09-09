@@ -7,7 +7,7 @@
 [![CI](https://github.com/lumos-tiamo/Helve/actions/workflows/ci.yml/badge.svg)](https://github.com/lumos-tiamo/Helve/actions/workflows/ci.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-3178C6?logo=typescript&logoColor=white)
-![tests 1848](https://img.shields.io/badge/tests-1848-14664b)
+![tests 1867](https://img.shields.io/badge/tests-1867-14664b)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
 Smith is a single, always-on agent that runs on your machine. It keeps
@@ -61,7 +61,7 @@ afterwards, as a context-budget tool rather than a second resident agent.
 
 ---
 
-## Four decisions worth defending
+## Five decisions worth defending
 
 **Memory is retrieved, not injected whole.** `durable.md` used to go into every
 prompt in full, so prompt cost grew with everything the agent had ever learned
@@ -91,6 +91,17 @@ pipelines and MCP tools cannot route around; writes pause for a human; the macOS
 Seatbelt sandbox confines host execution. The eval suite *infers* which tools
 should have paused from the ones actually called, so a new write path added to
 the agent is covered by every existing case the moment it is used.
+
+**As an MCP server, Helve offers knowledge and never actions.** It has always
+been an MCP *client*; `POST /api/mcp` is the other direction, so Claude Code or
+any host can ask this install what it has learned about your project. The
+exposed surface is `memory_search` and `skills_list` — nothing that mutates.
+Every write in this runtime pauses for a human, and an MCP caller has no human:
+exposing one would mean blocking forever on an approval nobody answers, or
+dropping the approval and turning the guard into decoration. Read-only
+*filesystem* tools are out too, for an independent reason — an external caller
+carries no workspace, and inventing one for them is how a guard gets bypassed by
+accident.
 
 **Dependencies flow one way.** `server → engine → common`. The engine never
 imports FastAPI; `agents/` imports nothing at all — it is loaded at runtime, so
@@ -126,6 +137,7 @@ graph LR
 | Terminal UI | `shell/` | Ink shell. Talks to the server over local HTTP, auto-starts the backend. |
 | Console | `web/` | React observability console, served by the backend at `/console`. |
 | Evals | `evals/` | Scenario evaluation: natural language in, world state out. |
+| MCP server | `server/app/mcp/` | What Helve offers *other* agents — knowledge, never actions. |
 
 ---
 
@@ -136,7 +148,7 @@ Every figure below comes from a command in this repository, not an estimate.
 | | |
 |---|---|
 | Engine tests | 1258 |
-| Server tests | 259 |
+| Server tests | 278 |
 | Shell tests | 305 |
 | Eval-harness tests | 26 |
 | CI | ubuntu + macOS matrix, five suites, container build and boot |
@@ -237,7 +249,7 @@ schema are still accepted. Nothing to do by hand.
 
 ```bash
 cd engine && uv run --extra test pytest tests    # 1258
-cd server && uv run --extra dev  pytest tests    # 259
+cd server && uv run --extra dev  pytest tests    # 278
 cd evals  && uv run --extra test pytest tests    # 26, offline
 cd shell  && npm test && npm run check           # 305 + typecheck + lint
 cd web    && npm run check && npm run build
@@ -278,6 +290,7 @@ has exactly one authoritative document, all written against the source.
 | [`docs/project/`](docs/project) | Conventions, roadmap, external comparisons |
 | [`evals/README.md`](evals/README.md) | What the eval harness measures, and what it refuses to |
 | [`web/README.md`](web/README.md) | The console, and two bugs writing it uncovered |
+| [`docs/subsystems/31-MCP-Server.md`](docs/subsystems/31-MCP-Server.md) | The outward MCP endpoint and the boundary on what it exposes |
 | [`brand/README.md`](brand/README.md) | The mark, and why it is shaped that way |
 
 Superseded drafts live in [`docs/archive/`](docs/archive) and are **not current
