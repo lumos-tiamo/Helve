@@ -153,7 +153,7 @@ Every figure below comes from a command in this repository, not an estimate.
 | Eval-harness tests | 30 |
 | CI | ubuntu + macOS matrix, five suites, container build and boot |
 | Memory retrieval | 92.9% recall · 51.9% mean token saving |
-| Scenario evals | 9/9 cases, 65/65 checks on `claude-sonnet-4-6` |
+| Scenario evals | 9/9 on sonnet-4-6 and opus-4-6, 8/9 on deepseek-v4-pro |
 
 The macOS runner is not decoration. The Seatbelt sandbox only exists there, so
 Linux alone would silently skip every sandbox test, and macOS alone would never
