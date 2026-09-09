@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Helve">
+  <title>Helve</title>
+  <g fill="currentColor">
+  <!-- Head: flat face on the left, tapering to a peen on the right.  The
+       asymmetry is what stops the mark reading as a letter T beside the
+       wordmark, and it is how a real hammer head is actually shaped. -->
+  <path d="M13 6h31l8 3.2v7.6l-8 3.2h-31a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2z"/>
+  <!-- Haft, deliberately off-centre under the face, with the grip bands cut
+       out as counter-subpaths (evenodd) so they survive any transform and any
+       background.  It flares toward the butt the way a handle does, to not
+       slip out of the hand — the helve is the part you hold. -->
+  <path fill-rule="evenodd" d="M22 20h8l1.2 36.6a2.2 2.2 0 0 1-2.2 2.3h-6a2.2 2.2 0 0 1-2.2-2.3z
+                               M22.3 37.5h7.5v2.8h-7.5z
+                               M22.2 44h7.7v2.8h-7.7z"/>
+  </g>
+</svg>
